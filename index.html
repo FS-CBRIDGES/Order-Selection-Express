@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FS Selector Express</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3347;
+    --accent: #f0c040;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f97316;
+    --info: #3b82f6;
+    --text: #f0f2f8;
+    --text2: #8b92a8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 768px;
+    margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  .screen { display: none; flex-direction: column; min-height: 100vh; animation: fadeIn 0.18s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 20; flex-shrink: 0;
+  }
+  .header-logo { font-family: var(--mono); font-weight: 700; font-size: 14px; color: var(--accent); letter-spacing: 0.1em; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .header-user { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+  .header-user span { color: var(--accent); }
+  .sync-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); font-family: var(--mono); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+  .status-dot.syncing { background: var(--accent); animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+  /* ── BUTTONS ── */
+  .btn {
+    border: none; border-radius: 10px;
+    font-family: var(--sans); font-weight: 600; font-size: 16px;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary  { background: var(--accent);   color: #0f1117; padding: 16px 24px; }
+  .btn-success  { background: var(--success);  color: #0f1117; }
+  .btn-danger   { background: var(--danger);   color: white; }
+  .btn-ghost    { background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 12px 18px; }
+  .btn-outline  { background: transparent;     color: var(--text2); border: 1px solid var(--border); padding: 10px 16px; font-size: 14px; }
+  .btn-sm       { padding: 8px 14px; font-size: 13px; }
+  .btn-warn     { background: var(--warning);  color: #0f1117; }
+  .btn-info     { background: var(--info);     color: white; }
+
+  /* ══════════════════════════════════════
+     SCREEN: LOGIN
+  ══════════════════════════════════════ */
+  .login-wrap {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px 24px; gap: 32px;
+  }
+  .login-logo-area { text-align: center; }
+  .login-logo { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: 0.12em; }
+  .login-sub  { font-family: var(--mono); font-size: 12px; color: var(--text2); letter-spacing: 0.1em; margin-top: 6px; }
+  .login-card {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px;
+  }
+  .login-card h2 { font-size: 18px; font-weight: 700; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); }
+  .form-input {
+    background: var(--bg); border: 2px solid var(--border); border-radius: 8px;
+    padding: 16px; font-family: var(--sans); font-size: 18px; color: var(--text);
+    outline: none; transition: border-color 0.2s; width: 100%;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .login-error {
+    background: #2d0a0a; border: 1px solid var(--danger); border-radius: 8px;
+    padding: 12px 16px; font-size: 14px; color: var(--danger); display: none;
+  }
+  .login-error.visible { display: block; }
+  .login-btn { width: 100%; padding: 18px; font-size: 18px; border-radius: 10px; margin-top: 4px; }
+  .resume-banner {
+    width: 100%; background: #1e1800; border: 1px solid var(--accent);
+    border-radius: 12px; padding: 16px 18px; display: none; flex-direction: column; gap: 12px;
+  }
+  .resume-banner.visible { display: flex; }
+  .resume-title  { font-weight: 700; font-size: 15px; color: var(--accent); }
+  .resume-detail { font-size: 13px; color: var(--text2); }
+  .resume-actions { display: flex; gap: 10px; }
+  .resume-actions .btn { flex: 1; padding: 12px; font-size: 14px; }
+
+  /* ══════════════════════════════════════
+     SCREEN: ORDER LIST
+  ══════════════════════════════════════ */
+  .orderlist-header-row {
+    padding: 14px 18px 10px;
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .orderlist-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); }
+  .refresh-btn {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-family: var(--mono); font-size: 12px; color: var(--text2);
+    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s;
+  }
+  .refresh-btn:active { border-color: var(--accent); color: var(--accent); }
+  .refresh-icon { font-size: 14px; display: inline-block; }
+  .refresh-icon.spinning { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .orderlist-scroll { flex: 1; overflow-y: auto; padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .last-refresh { padding: 0 18px 8px; font-family: var(--mono); font-size: 11px; color: var(--text2); }
+
+  .order-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .order-card:active { border-color: var(--accent); background: var(--surface2); }
+  .order-card.unsynced { border-color: var(--danger); background: #1f0a0a; }
+  .order-card.unsynced .order-shipnum { color: var(--danger); }
+  .order-card.in-progress { border-color: var(--accent); }
+  .order-card.in-progress .order-shipnum { color: var(--accent); }
+
+  .order-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .order-shipnum { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
+  .order-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+  .priority-badge {
+    border-radius: 6px; padding: 4px 10px;
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .priority-urgent { background: #3d0a0a; color: #ff4444; border: 1px solid #ff4444; animation: urgentPulse 1.5s infinite; }
+  .priority-high   { background: #2d1a00; color: var(--warning); border: 1px solid var(--warning); }
+  .priority-medium { background: #0d1a2d; color: #3b82f6; border: 1px solid #3b82f6; }
+  .priority-low    { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  @keyframes urgentPulse { 0%,100%{opacity:1}50%{opacity:0.6} }
+
+  .status-badge {
+    border-radius: 6px; padding: 4px 10px;
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  }
+  .badge-inprogress { background: #1e1800; color: var(--accent); border: 1px solid var(--accent); }
+  .badge-unsynced   { background: var(--danger); color: white; animation: urgentPulse 1.5s infinite; }
+
+  .order-customer { font-size: 16px; font-weight: 600; color: var(--text); }
+  .order-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+  .order-meta-item { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+  .order-meta-item span { color: var(--text); }
+
+  .empty-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; padding: 40px; text-align: center;
+  }
+  .empty-icon  { font-size: 48px; opacity: 0.3; }
+  .empty-title { font-size: 18px; font-weight: 700; color: var(--text2); }
+  .empty-sub   { font-size: 14px; color: var(--text2); opacity: 0.6; }
+  .logout-row  { padding: 16px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; }
+
+  /* ══════════════════════════════════════
+     BOX TYPE SELECTOR MODAL
+  ══════════════════════════════════════ */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    animation: fadeIn 0.15s ease;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-sheet {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border); padding: 0 0 24px;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 14px auto 0; }
+  .modal-header {
+    padding: 18px 20px 14px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-size: 17px; font-weight: 700; }
+  .modal-sub   { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .modal-close { font-size: 22px; color: var(--text2); cursor: pointer; padding: 4px 8px; background: none; border: none; }
+  .box-type-grid {
+    padding: 16px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .box-type-btn {
+    background: var(--surface2); border: 2px solid var(--border); border-radius: 14px;
+    padding: 18px 14px; cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+    text-align: left;
+  }
+  .box-type-btn:active { border-color: var(--accent); background: #1e1800; transform: scale(0.97); }
+  .box-type-id   { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--accent); }
+  .box-type-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .box-type-dims { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+
+  /* ══════════════════════════════════════
+     SCREEN: ACTIVE SELECTION
+  ══════════════════════════════════════ */
+  .pick-top-bar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 18px; flex-shrink: 0;
+  }
+  .pick-top-row   { display: flex; align-items: center; justify-content: space-between; }
+  .pick-shipnum   { font-family: var(--mono); font-size: 13px; color: var(--text2); }
+  .pick-shipnum span { color: var(--accent); font-weight: 700; }
+  .pick-customer  { font-size: 17px; font-weight: 700; margin-top: 2px; }
+  .progress-wrap  { margin-top: 12px; }
+  .progress-bar-bg   { background: var(--bg); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+  .progress-text  { font-family: var(--mono); font-size: 11px; color: var(--text2); margin-top: 5px; letter-spacing: 0.05em; }
+
+  /* BOX STATUS BAR */
+  .box-status-bar {
+    background: #0d1a0d; border-bottom: 2px solid #22c55e40;
+    padding: 10px 18px; display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0; gap: 12px;
+  }
+  .box-status-left { display: flex; align-items: center; gap: 12px; }
+  .box-icon { font-size: 20px; }
+  .box-info { display: flex; flex-direction: column; gap: 1px; }
+  .box-label { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--success); letter-spacing: 0.05em; }
+  .box-counter { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+  .box-counter span { color: var(--success); font-weight: 700; }
+  .new-box-btn {
+    background: var(--success); color: #0f1117; border: none; border-radius: 10px;
+    padding: 10px 16px; font-family: var(--sans); font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .new-box-btn:active { transform: scale(0.96); background: #16a34a; }
+
+  .offline-banner {
+    background: #1e1800; border-bottom: 1px solid #f0c04030;
+    padding: 8px 18px; display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--accent); font-family: var(--mono); flex-shrink: 0;
+  }
+
+  .pick-main { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+
+  /* ITEM CARD */
+  .item-card {
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 14px; overflow: hidden; transition: border-color 0.2s;
+  }
+  .item-card.match   { border-color: var(--success); }
+  .item-card.nomatch { border-color: var(--danger); animation: shake 0.3s ease; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)} 40%{transform:translateX(8px)}
+    60%{transform:translateX(-6px)} 80%{transform:translateX(6px)}
+  }
+  .item-card-body  { padding: 20px 20px 14px; }
+  .item-line-num   { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
+  .item-assortment { font-family: var(--mono); font-size: 36px; font-weight: 700; color: var(--accent); line-height: 1; letter-spacing: 0.03em; min-height: 44px; }
+  .item-description{ font-size: 18px; font-weight: 500; color: var(--text); margin-top: 8px; line-height: 1.3; }
+  .item-sku        { font-family: var(--mono); font-size: 13px; color: var(--text2); margin-top: 8px; letter-spacing: 0.05em; }
+  .item-location   {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border-top: 1px solid var(--border);
+    padding: 14px 20px; font-family: var(--mono); font-size: 22px; font-weight: 700;
+    color: var(--text); letter-spacing: 0.05em;
+  }
+  .loc-label { font-size: 11px; font-weight: 400; color: var(--text2); text-transform: uppercase; letter-spacing: 0.12em; display: block; margin-bottom: 2px; }
+
+  /* SCAN COUNTER */
+  .scan-counter {
+    margin: 0 20px 16px; background: var(--bg); border-radius: 12px;
+    padding: 18px 20px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .counter-display { display: flex; align-items: baseline; gap: 8px; }
+  .counter-num     { font-family: var(--mono); font-size: 56px; font-weight: 700; line-height: 1; color: var(--text); transition: color 0.2s; }
+  .counter-num.complete { color: var(--success); }
+  .counter-num.partial  { color: var(--warning); }
+  .counter-sep     { font-family: var(--mono); font-size: 28px; color: var(--text2); }
+  .counter-needed  { font-family: var(--mono); font-size: 28px; color: var(--text2); }
+  .counter-label   { font-family: var(--mono); font-size: 11px; color: var(--text2); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+  .counter-right   { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+  .scan-feedback {
+    text-align: center; font-family: var(--mono); font-size: 13px;
+    padding: 8px 16px; border-radius: 6px; letter-spacing: 0.05em;
+    min-height: 34px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .scan-feedback.idle     { color: var(--text2); }
+  .scan-feedback.good     { background: #052e16; color: var(--success); }
+  .scan-feedback.bad      { background: #2d0a0a; color: var(--danger); }
+  .scan-feedback.done-all { background: #052e16; color: var(--success); font-weight: 700; }
+  .scan-feedback.warn     { background: #2d1a00; color: var(--warning); }
+
+  /* MANUAL ENTRY */
+  .manual-entry {
+    margin: 0 16px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; display: none; flex-direction: column; gap: 12px;
+    width: calc(100% - 32px);
+  }
+  .manual-entry.visible { display: flex; }
+  .manual-header { display: flex; align-items: center; justify-content: space-between; }
+  .manual-label  { font-size: 13px; color: var(--text2); }
+  .manual-row    { display: flex; gap: 10px; align-items: stretch; width: 100%; }
+  .manual-input  {
+    flex: 1; min-width: 0; background: var(--bg); border: 2px solid var(--border);
+    border-radius: 8px; padding: 14px; font-family: var(--mono); font-size: 28px;
+    color: var(--text); outline: none; text-align: center; transition: border-color 0.2s;
+  }
+  .manual-input:focus  { border-color: var(--accent); }
+  .manual-input.error  { border-color: var(--danger); }
+  .manual-set-btn {
+    flex-shrink: 0; width: 80px; background: var(--accent); color: #0f1117;
+    border: none; border-radius: 8px; font-family: var(--sans); font-weight: 700;
+    font-size: 16px; cursor: pointer;
+  }
+  .manual-set-btn:active { transform: scale(0.96); }
+  .manual-error  { font-size: 13px; color: var(--danger); font-family: var(--mono); display: none; }
+  .manual-error.visible { display: block; }
+  .manual-max-hint { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+
+  /* ACTION ROW */
+  .pick-actions {
+    padding: 14px 16px; display: flex; gap: 10px;
+    border-top: 1px solid var(--border); background: var(--surface);
+  }
+  .pick-actions .btn { flex: 1; padding: 16px; font-size: 15px; }
+
+  /* OVERVIEW SHEET */
+  .overview-sheet {
+    position: fixed; inset: 0; background: #0008; z-index: 50;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    animation: sheetIn 0.2s ease;
+  }
+  @keyframes sheetIn { from { opacity:0; } to { opacity:1; } }
+  .overview-inner {
+    background: var(--surface); border-radius: 16px 16px 0 0;
+    max-height: 85vh; overflow-y: auto; border-top: 1px solid var(--border);
+  }
+  .sheet-handle  { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+  .sheet-header  {
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface);
+  }
+  .sheet-title  { font-weight: 700; font-size: 16px; }
+  .sheet-close  { font-size: 22px; color: var(--text2); cursor: pointer; padding: 4px 8px; }
+  .overview-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .ov-item {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .ov-item:active    { border-color: var(--accent); }
+  .ov-item.done      { border-color: #14532d50; }
+  .ov-item.short-pick { border-color: #45222250; }
+  .ov-status { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .ov-status.pending   { background: var(--surface2); color: var(--text2); }
+  .ov-status.done      { background: #14532d; color: var(--success); }
+  .ov-status.short-pick { background: #450a0a; color: var(--danger); }
+  .ov-status.current   { background: #3a2e00; color: var(--accent); }
+  .ov-info  { flex: 1; min-width: 0; }
+  .ov-assort { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--accent); }
+  .ov-desc   { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .ov-qty    { font-family: var(--mono); font-size: 14px; color: var(--text); white-space: nowrap; }
+  .ov-manual-flag { font-family: var(--mono); font-size: 10px; color: var(--warning); margin-top: 2px; }
+
+  /* BOX SUMMARY in overview */
+  .ov-box-section { padding: 10px 12px 4px; }
+  .ov-box-header  { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); padding: 6px 4px 8px; }
+  .ov-box-card {
+    background: #0d1a0d; border: 1px solid #22c55e30; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 6px;
+  }
+  .ov-box-title  { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--success); margin-bottom: 6px; }
+  .ov-box-line   { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+  .ov-box-line span { color: var(--text); }
+
+  /* CONFIRM SCREEN */
+  .confirm-content { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
+  .section-label   { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+  .summary-card    { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .summary-row     { padding: 15px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label   { font-size: 14px; color: var(--text2); }
+  .summary-value   { font-family: var(--mono); font-size: 16px; font-weight: 600; }
+  .summary-value.ok   { color: var(--success); }
+  .summary-value.warn { color: var(--danger); }
+  .summary-value.info { color: var(--warning); }
+
+  /* BOX SUMMARY on confirm screen */
+  .box-summary-list { display: flex; flex-direction: column; gap: 8px; }
+  .box-summary-item {
+    background: #0d1a0d; border: 1px solid #22c55e30; border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .box-summary-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .box-summary-name   { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--success); }
+  .box-summary-count  { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+  .box-summary-lines  { display: flex; flex-direction: column; gap: 4px; }
+  .box-summary-line   { font-size: 13px; color: var(--text2); }
+  .box-summary-line span { color: var(--text); font-weight: 500; }
+
+  .short-list  { display: flex; flex-direction: column; gap: 8px; }
+  .short-item  {
+    background: #1f0a0a; border: 1px solid #450a0a; border-radius: 10px;
+    padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .short-assort     { font-family: var(--mono); font-weight: 700; font-size: 16px; color: var(--danger); }
+  .short-desc       { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .short-qty-display { font-family: var(--mono); font-size: 18px; color: var(--text); text-align: right; }
+  .short-qty-label  { font-size: 11px; color: var(--text2); text-align: right; margin-top: 2px; }
+
+  .manual-list { display: flex; flex-direction: column; gap: 8px; }
+  .manual-item {
+    background: #1e1800; border: 1px solid #f0c04040; border-radius: 10px;
+    padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .manual-item-assort { font-family: var(--mono); font-weight: 700; font-size: 16px; color: var(--warning); }
+  .manual-item-desc   { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .manual-item-qty    { font-family: var(--mono); font-size: 18px; color: var(--text); text-align: right; }
+  .manual-item-label  { font-size: 11px; color: var(--warning); text-align: right; margin-top: 2px; }
+
+  /* SYNC FAIL BANNER */
+  .sync-fail-banner {
+    background: #2d0a0a; border: 1px solid var(--danger); border-radius: 10px;
+    padding: 16px; display: none; flex-direction: column; gap: 10px;
+  }
+  .sync-fail-banner.visible { display: flex; }
+  .sync-fail-title { font-weight: 700; color: var(--danger); font-size: 15px; }
+  .sync-fail-sub   { font-size: 13px; color: var(--text2); }
+  .sync-fail-actions { display: flex; gap: 10px; }
+  .sync-fail-actions .btn { flex: 1; padding: 12px; font-size: 14px; }
+
+  /* BOTTOM BAR */
+  .bottom-bar {
+    position: sticky; bottom: 0; background: var(--surface);
+    border-top: 1px solid var(--border); padding: 14px 18px;
+    display: flex; gap: 10px; flex-shrink: 0;
+  }
+  .bottom-bar .btn { flex: 1; padding: 18px; font-size: 17px; }
+
+  /* SYNC / SUCCESS */
+  .center-screen { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:40px; text-align:center; }
+  .sync-ring     { width:72px; height:72px; border:4px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+  .sync-label    { font-family:var(--mono); font-size:13px; color:var(--text2); letter-spacing:0.08em; }
+  .success-icon  { width:80px; height:80px; background:#14532d; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:36px; }
+  .success-title { font-size:26px; font-weight:700; }
+  .success-sub   { font-family:var(--mono); font-size:13px; color:var(--text2); }
+
+  #scan-trap { position:fixed; top:-9999px; left:-9999px; opacity:0; width:1px; height:1px; }
+</style>
+</head>
+<body>
+
+<input id="scan-trap" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+<!-- ═══════════ BOX TYPE SELECTOR MODAL ═══════════ -->
+<div class="modal-overlay hidden" id="box-type-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">New Box — Select Type</div>
+        <div class="modal-sub">Choose the box you are packing into</div>
+      </div>
+      <button class="modal-close" onclick="cancelNewBox()">✕</button>
+    </div>
+    <div class="box-type-grid" id="box-type-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: LOGIN ═══════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-logo-area">
+      <div class="login-logo">FS · SELECTOR EXPRESS</div>
+      <div class="login-sub">FASTENING SPECIALISTS · WAREHOUSE</div>
+    </div>
+    <div class="login-card">
+      <h2>Sign In</h2>
+      <div class="resume-banner" id="resume-banner">
+        <div class="resume-title">⚡ Unsynced orders found</div>
+        <div class="resume-detail" id="resume-detail">You have pending orders from a previous session.</div>
+        <div class="resume-actions">
+          <button class="btn btn-ghost btn-sm" onclick="dismissResume()">Dismiss</button>
+          <button class="btn btn-primary btn-sm" onclick="goToOrderList()">View Orders →</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Username</div>
+        <input class="form-input" id="login-username" type="text" placeholder="Acumatica username"
+               autocomplete="username" autocorrect="off" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Password</div>
+        <input class="form-input" id="login-password" type="password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <div class="login-error" id="login-error">Incorrect username or password. Please try again.</div>
+      <button class="btn btn-primary login-btn" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: ORDER LIST ═══════════ -->
+<div class="screen" id="screen-orderlist">
+  <div class="header">
+    <div class="header-logo">FS · SELECTOR EXPRESS</div>
+    <div class="header-right">
+      <div class="header-user">Selector: <span id="header-username">—</span></div>
+      <div class="sync-status">
+        <div class="status-dot" id="sync-dot"></div>
+        <span id="sync-label">LIVE</span>
+      </div>
+    </div>
+  </div>
+  <div class="orderlist-header-row">
+    <div class="orderlist-title">Your Orders</div>
+    <button class="refresh-btn" onclick="manualRefresh()">
+      <span class="refresh-icon" id="refresh-icon">↺</span> Refresh
+    </button>
+  </div>
+  <div class="last-refresh" id="last-refresh-label">—</div>
+  <div class="orderlist-scroll" id="orderlist-container"></div>
+  <div class="logout-row">
+    <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: ACTIVE SELECTION ═══════════ -->
+<div class="screen" id="screen-pick">
+  <div class="header">
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="exitSelection()">← Exit</button>
+    <div class="header-logo">SELECTING</div>
+    <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;" onclick="showOverview()">All Lines</button>
+  </div>
+  <div class="pick-top-bar">
+    <div class="pick-top-row">
+      <div>
+        <div class="pick-shipnum">Shipment <span id="p-shipnum">—</span></div>
+        <div class="pick-customer" id="p-customer">—</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="p-progress" style="width:0%"></div></div>
+      <div class="progress-text" id="p-progress-text">0 of 0 lines complete</div>
+    </div>
+  </div>
+
+  <!-- BOX STATUS BAR -->
+  <div class="box-status-bar">
+    <div class="box-status-left">
+      <div class="box-icon">📦</div>
+      <div class="box-info">
+        <div class="box-label" id="box-label">Box 1 · SHIPPING</div>
+        <div class="box-counter">Items in this box: <span id="box-item-count">0</span></div>
+      </div>
+    </div>
+    <button class="new-box-btn" onclick="requestNewBox()">+ New Box</button>
+  </div>
+
+  <div class="offline-banner">⚡ Offline mode · selections saved locally · sync after completing order</div>
+  <div class="pick-main">
+    <div class="item-card" id="item-card">
+      <div class="item-card-body">
+        <div class="item-line-num" id="item-linenum">Line 1 of —</div>
+        <div class="item-assortment" id="item-assort"></div>
+        <div class="item-description" id="item-desc">—</div>
+        <div class="item-sku" id="item-sku">SKU: —</div>
+        <div class="item-location" id="item-loc">
+          <div><span class="loc-label">📍 Go to location</span>—</div>
+        </div>
+      </div>
+      <div class="scan-counter">
+        <div>
+          <div class="counter-display">
+            <div class="counter-num" id="counter-num">0</div>
+            <div class="counter-sep">/</div>
+            <div class="counter-needed" id="counter-needed">—</div>
+          </div>
+          <div class="counter-label">scanned / needed</div>
+        </div>
+        <div class="counter-right">
+          <div class="scan-feedback idle" id="scan-feedback">Scan item barcode</div>
+          <button class="btn btn-outline" onclick="startManual()" style="font-size:13px;padding:8px 14px;">Enter qty manually</button>
+        </div>
+      </div>
+
+      <!-- MANUAL ENTRY -->
+      <div class="manual-entry" id="manual-entry">
+        <div class="manual-header">
+          <div class="manual-label" id="manual-label-text">Step 1 of 2 — Enter quantity selected:</div>
+          <div class="manual-max-hint" id="manual-max-hint"></div>
+        </div>
+        <div class="manual-row">
+          <input class="manual-input" id="manual-input-1" type="number" inputmode="numeric" min="0" placeholder="0">
+          <button class="manual-set-btn" onclick="manualStep()">NEXT</button>
+        </div>
+        <div class="manual-row" id="manual-confirm-row" style="display:none;">
+          <input class="manual-input" id="manual-input-2" type="number" inputmode="numeric" min="0" placeholder="Re-enter qty">
+          <button class="manual-set-btn" onclick="manualConfirm()">SET</button>
+        </div>
+        <div class="manual-error" id="manual-error"></div>
+        <button class="btn btn-outline btn-sm" onclick="cancelManual()" style="align-self:flex-start;">Cancel</button>
+      </div>
+
+      <div class="pick-actions">
+        <button class="btn btn-ghost" onclick="confirmShort()">Short Ship</button>
+        <button class="btn btn-success" onclick="confirmLine()" style="flex:2">Confirm ✓</button>
+      </div>
+    </div>
+
+    <div id="all-done-card" style="display:none; background:var(--surface); border:2px solid var(--success); border-radius:14px; padding:32px; text-align:center; flex-direction:column; align-items:center; gap:16px;">
+      <div style="font-size:48px;">✓</div>
+      <div style="font-size:22px; font-weight:700;">All Lines Selected</div>
+      <div style="font-family:var(--mono); font-size:13px; color:var(--text2);">Ready to sync to Acumatica</div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-ghost" onclick="showOverview()">Overview</button>
+    <button class="btn btn-primary" style="flex:2;" onclick="goToConfirm()">Review & Confirm →</button>
+  </div>
+</div>
+
+<!-- LINE OVERVIEW SHEET -->
+<div id="overview-sheet" style="display:none;" class="overview-sheet" onclick="hideOverview(event)">
+  <div class="overview-inner">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">All Lines</div>
+      <div class="sheet-close" onclick="hideOverview()">✕</div>
+    </div>
+    <!-- Box summary -->
+    <div class="ov-box-section" id="ov-box-section"></div>
+    <div class="overview-list" id="overview-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: CONFIRM ═══════════ -->
+<div class="screen" id="screen-confirm">
+  <div class="header">
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="goTo('screen-pick')">← Back</button>
+    <div class="header-logo">CONFIRM</div>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="confirm-content">
+    <div class="section-label">Shipment Summary</div>
+    <div class="summary-card" id="confirm-summary"></div>
+
+    <div id="box-confirm-section">
+      <div class="section-label">Boxes</div>
+      <div class="box-summary-list" id="box-summary-list"></div>
+    </div>
+
+    <div id="short-section" style="display:none;">
+      <div class="section-label" style="color:var(--danger);">⚠ Short Ships</div>
+      <div class="short-list" id="short-list"></div>
+    </div>
+
+    <div id="manual-section" style="display:none;">
+      <div class="section-label" style="color:var(--warning);">⚠ Manually Entered Quantities — Supervisor Review Recommended</div>
+      <div class="manual-list" id="manual-list"></div>
+    </div>
+
+    <div class="sync-fail-banner" id="sync-fail-banner">
+      <div class="sync-fail-title">⚠ Sync Failed</div>
+      <div class="sync-fail-sub">Could not connect to Acumatica. Your selection is saved and will retry when you're back online.</div>
+      <div class="sync-fail-actions">
+        <button class="btn btn-ghost btn-sm" onclick="hideSyncFail()">Dismiss</button>
+        <button class="btn btn-danger btn-sm" onclick="doSync()">Retry Now</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-ghost" onclick="goTo('screen-pick')">Back</button>
+    <button class="btn btn-success" style="flex:2;" onclick="doSync()">Sync to Acumatica ↑</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: SYNCING ═══════════ -->
+<div class="screen" id="screen-sync">
+  <div class="header"><div class="header-logo">FS · SELECTOR EXPRESS</div></div>
+  <div class="center-screen">
+    <div class="sync-ring"></div>
+    <div class="sync-label">SYNCING TO ACUMATICA...</div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: SUCCESS ═══════════ -->
+<div class="screen" id="screen-success">
+  <div class="header"><div class="header-logo">FS · SELECTOR EXPRESS</div></div>
+  <div class="center-screen">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Shipment Confirmed</div>
+    <div class="success-sub" id="success-detail">—</div>
+    <button class="btn btn-primary" style="padding:18px 40px;font-size:17px;margin-top:16px;" onclick="goToOrderList()">Back to Orders</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════
+//  CONFIG — flip USE_LIVE_API to true to go live
+// ═══════════════════════════════════════════════════════
+const USE_LIVE_API = false;
+const API_BASE     = 'https://bigleaguecs.acumatica.com';
+const API_COMPANY  = 'Testing Tenant';
+const API_VERSION  = '24.200.001';
+
+// ═══════════════════════════════════════════════════════
+//  ACUMATICA API LAYER
+// ═══════════════════════════════════════════════════════
+
+async function apiLogin(username, password) {
+  const resp = await fetch(`${API_BASE}/entity/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ name: username, password: password, company: API_COMPANY })
+  });
+  if (resp.status === 204) return { ok: true };
+  if (resp.status === 401) return { ok: false, reason: 'invalid_credentials' };
+  return { ok: false, reason: `server_error_${resp.status}` };
+}
+
+async function apiLogout() {
+  try {
+    await fetch(`${API_BASE}/entity/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch(e) {}
+}
+
+async function apiFetchOrders(username) {
+  // Pull shipments assigned to this picker, status Assigned or Being Picked
+  const filter = `AssignedPicker eq '${username}' and (Status eq 'Assigned' or Status eq 'Being Picked')`;
+  const expand = 'Details';
+  const url = `${API_BASE}/entity/Default/${API_VERSION}/Shipment?$filter=${encodeURIComponent(filter)}&$expand=${expand}`;
+  const resp = await fetch(url, { credentials: 'include' });
+  if (!resp.ok) throw new Error(`Fetch orders failed: ${resp.status}`);
+  const data = await resp.json();
+  return data.map(s => mapAcumaticaShipment(s));
+}
+
+function mapAcumaticaShipment(s) {
+  // Map Acumatica REST response shape → app's internal order shape
+  const lines = (s.Details || []).map(d => ({
+    sku:          d.InventoryID?.value || '',
+    description:  d.Description?.value || '',
+    location:     d.LocationID?.value || '',
+    qty:          parseFloat(d.ShippedQty?.value || d.OrderQty?.value || 0),
+    type:         d.ItemType?.value || '',
+    postingClass: d.PostingClass?.value || '',
+    upcs:         [],           // UPCs not in pick list endpoint — barcode = SKU fallback
+    lineNbr:      d.LineNbr?.value,
+  }));
+  return {
+    shipNum:          s.ShipmentNbr?.value || '',
+    customer:         s.CustomerID?.value || '',
+    po:               s.CustomerOrderNbr?.value || '',
+    priority:         s.Priority?.value || 'Medium',
+    date:             (s.ShipmentDate?.value || '').slice(0, 10),
+    assignedSelector: s.AssignedPicker?.value || '',
+    lines,
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+//  BOX TYPES — matches Acumatica exactly
+// ═══════════════════════════════════════════════════════
+const BOX_TYPES = [
+  { id: 'SHIPPING', name: 'Standard Shipping Box', dims: '17.5 × 13 × 6.75 IN' },
+  { id: 'KEG',      name: '1/4 Keg Box',           dims: '10.38 × 10.38 × 5.5 IN' },
+  { id: 'ROD',      name: 'Rod Box',                dims: '40 × 6 × 4.5 IN' },
+  { id: 'PALLET1',  name: '40 × 48 Pallet',         dims: '40 × 48 × 4 IN' },
+  { id: 'PALLET2',  name: '36 × 36 Pallet',         dims: '36 × 36 × 4 IN' },
+  { id: 'CUSTOM',   name: 'Custom Shipping',         dims: '8 × 8 × 5 IN' },
+];
+
+// ═══════════════════════════════════════════════════════
+//  MOCK DATA
+// ═══════════════════════════════════════════════════════
+const MOCK_ORDERS = [
+  {
+    shipNum:'SHP0008725', customer:'City Electric Supply', po:'PO-8725',
+    priority:'Urgent', date:'2026-03-27', assignedSelector:'chip',
+    lines:[
+      { sku:'75471', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', location:'A-14', qty:4, upcs:['746071754717'] },
+      { sku:'16018', type:'Finished Good', postingClass:'ASSORTMENT', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct',   location:'C-07', qty:2, upcs:['746071160181'] },
+      { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct',   location:'A-14', qty:3, upcs:['746071754656'] },
+    ]
+  },
+  {
+    shipNum:'SHP0008741', customer:'Ace Hardware Edi', po:'PO-8741',
+    priority:'Medium', date:'2026-03-27', assignedSelector:'chip',
+    lines:[
+      { sku:'16018', type:'Finished Good', postingClass:'ASSORTMENT', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct',  location:'C-07', qty:5, upcs:['746071160181'] },
+      { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct',  location:'A-14', qty:2, upcs:['746071754656'] },
+    ]
+  },
+  {
+    shipNum:'SHP0008743', customer:'Ace Hardware Edi', po:'PO-8743',
+    priority:'High', date:'2026-03-27', assignedSelector:'chip',
+    lines:[
+      { sku:'75471', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', location:'A-14', qty:4, upcs:['746071754717'] },
+      { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct',  location:'A-14', qty:2, upcs:['746071754656'] },
+      { sku:'16018', type:'Finished Good', postingClass:'ASSORTMENT', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct',  location:'C-07', qty:1, upcs:['746071160181'] },
+    ]
+  },
+  {
+    shipNum:'SHP0008745', customer:'Ace Hardware Edi', po:'PO-8745',
+    priority:'Low', date:'2026-03-27', assignedSelector:'chip',
+    lines:[
+      { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', location:'A-14', qty:1, upcs:['746071754656'] },
+    ]
+  },
+];
+
+const PRIORITY_ORDER = { 'Urgent':0, 'High':1, 'Medium':2, 'Low':3 };
+
+// ═══════════════════════════════════════════════════════
+//  ASSORTMENT CODE PARSER
+// ═══════════════════════════════════════════════════════
+function parseAssortment(item) {
+  if (item.type === 'Finished Good' && item.postingClass === 'ASSORTMENT')
+    return item.description.split(' ')[0];
+  return '';
+}
+
+// ═══════════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════════
+const STORAGE_PREFIX = 'fsse_';
+function storageKey(user, suffix) { return STORAGE_PREFIX + user + '_' + suffix; }
+function saveSelection(user, shipNum, data) {
+  try { localStorage.setItem(storageKey(user, 'sel_' + shipNum), JSON.stringify(data)); } catch(e) {}
+}
+function loadSelection(user, shipNum) {
+  try { const d = localStorage.getItem(storageKey(user, 'sel_' + shipNum)); return d ? JSON.parse(d) : null; } catch(e) { return null; }
+}
+function removeSelection(user, shipNum) {
+  try { localStorage.removeItem(storageKey(user, 'sel_' + shipNum)); } catch(e) {}
+}
+function getAllSelections(user) {
+  const sels = {};
+  try {
+    const prefix = storageKey(user, 'sel_');
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix)) {
+        const shipNum = k.slice(prefix.length);
+        sels[shipNum] = JSON.parse(localStorage.getItem(k));
+      }
+    }
+  } catch(e) {}
+  return sels;
+}
+
+// ═══════════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════════
+const FAKE_USERS = { 'chip': 'chip' };
+let currentUser = null;
+
+function doLogin() {
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const btn      = document.querySelector('.login-btn');
+
+  if (USE_LIVE_API) {
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    errEl.classList.remove('visible');
+    apiLogin(username, password).then(result => {
+      btn.disabled = false;
+      btn.textContent = 'Sign In →';
+      if (result.ok) {
+        currentUser = username;
+        document.getElementById('header-username').textContent = username;
+        checkResumeState(username);
+        loadOrderList();
+        goTo('screen-orderlist');
+      } else if (result.reason === 'invalid_credentials') {
+        errEl.textContent = 'Incorrect username or password. Please try again.';
+        errEl.classList.add('visible');
+        document.getElementById('login-password').value = '';
+      } else {
+        errEl.textContent = `Unable to reach Acumatica (${result.reason}). Check your connection.`;
+        errEl.classList.add('visible');
+      }
+    }).catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Sign In →';
+      errEl.textContent = 'Network error — could not connect to Acumatica.';
+      errEl.classList.add('visible');
+    });
+  } else {
+    // Mock auth
+    if (FAKE_USERS[username] && FAKE_USERS[username] === password) {
+      errEl.classList.remove('visible');
+      currentUser = username;
+      document.getElementById('header-username').textContent = username;
+      checkResumeState(username);
+      loadOrderList();
+      goTo('screen-orderlist');
+    } else {
+      errEl.textContent = 'Incorrect username or password. Please try again.';
+      errEl.classList.add('visible');
+      document.getElementById('login-password').value = '';
+    }
+  }
+}
+
+function doLogout() {
+  if (USE_LIVE_API) apiLogout();
+  currentUser = null;
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').classList.remove('visible');
+  document.getElementById('resume-banner').classList.remove('visible');
+  goTo('screen-login');
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('login-username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+
+// ═══════════════════════════════════════════════════════
+//  RESUME STATE
+// ═══════════════════════════════════════════════════════
+function checkResumeState(user) {
+  const sels = getAllSelections(user);
+  const count = Object.keys(sels).length;
+  if (count > 0) {
+    document.getElementById('resume-detail').textContent =
+      `You have ${count} unsynced order${count > 1 ? 's' : ''} from a previous session.`;
+    document.getElementById('resume-banner').classList.add('visible');
+  }
+}
+function dismissResume() { document.getElementById('resume-banner').classList.remove('visible'); }
+
+// ═══════════════════════════════════════════════════════
+//  ORDER LIST
+// ═══════════════════════════════════════════════════════
+let orderListOrders = [];
+let lastRefreshTime = null;
+
+function loadOrderList() {
+  if (USE_LIVE_API) {
+    setSyncStatus('syncing', 'LOADING');
+    apiFetchOrders(currentUser).then(orders => {
+      orderListOrders = orders.sort((a, b) => {
+        const pd = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+        return pd !== 0 ? pd : new Date(a.date) - new Date(b.date);
+      });
+      lastRefreshTime = new Date();
+      setSyncStatus('online', 'LIVE');
+      renderOrderList();
+    }).catch(err => {
+      console.error('loadOrderList error:', err);
+      setSyncStatus('online', 'LIVE');
+      lastRefreshTime = new Date();
+      renderOrderList(); // render whatever we have (may be empty)
+    });
+  } else {
+    orderListOrders = MOCK_ORDERS
+      .filter(o => o.assignedSelector === currentUser)
+      .sort((a, b) => {
+        const pd = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+        return pd !== 0 ? pd : new Date(a.date) - new Date(b.date);
+      });
+    lastRefreshTime = new Date();
+    renderOrderList();
+  }
+}
+
+function renderOrderList() {
+  const container = document.getElementById('orderlist-container');
+  const sels = getAllSelections(currentUser);
+  if (lastRefreshTime) {
+    const t = lastRefreshTime.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('last-refresh-label').textContent = `Last refreshed ${t}`;
+  }
+  const apiShipNums = new Set(orderListOrders.map(o => o.shipNum));
+  const unsyncedOnly = Object.entries(sels)
+    .filter(([sn]) => !apiShipNums.has(sn))
+    .map(([, data]) => ({ ...data.order, _unsyncedOnly: true, lines: data.lines }));
+  const allOrders = [...orderListOrders, ...unsyncedOnly];
+  if (allOrders.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No orders found</div>
+        <div class="empty-sub">No orders are assigned to <strong>${currentUser}</strong>.<br>Please verify your username or check with your supervisor.</div>
+      </div>`;
+    return;
+  }
+  container.innerHTML = allOrders.map(order => {
+    const saved = sels[order.shipNum];
+    const isUnsynced = saved && saved.lines && saved.lines.every(l => l.status !== 'pending');
+    const isInProgress = saved && saved.lines && saved.lines.some(l => l.status === 'pending');
+    const pClass = 'priority-' + (order.priority || 'medium').toLowerCase();
+    const lineCount = order.lines ? order.lines.length : '—';
+    let badges = `<div class="priority-badge ${pClass}">${order.priority || 'Medium'}</div>`;
+    if (isUnsynced)   badges = `<div class="status-badge badge-unsynced">SYNC NOW</div>` + badges;
+    if (isInProgress) badges = `<div class="status-badge badge-inprogress">IN PROGRESS</div>` + badges;
+    return `
+      <div class="order-card ${isUnsynced ? 'unsynced' : isInProgress ? 'in-progress' : ''}" onclick="openOrder('${order.shipNum}')">
+        <div class="order-top">
+          <div class="order-shipnum">${order.shipNum}</div>
+          <div class="order-badges">${badges}</div>
+        </div>
+        <div class="order-customer">${order.customer}</div>
+        <div class="order-meta">
+          <div class="order-meta-item">PO <span>${order.po}</span></div>
+          <div class="order-meta-item">Lines <span>${lineCount}</span></div>
+          <div class="order-meta-item">Date <span>${order.date || '—'}</span></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function manualRefresh() {
+  const icon = document.getElementById('refresh-icon');
+  icon.classList.add('spinning');
+  setSyncStatus('syncing', 'REFRESHING');
+  setTimeout(() => {
+    loadOrderList();
+    icon.classList.remove('spinning');
+    setSyncStatus('online', 'LIVE');
+  }, 1200);
+}
+
+function setSyncStatus(state, label) {
+  document.getElementById('sync-dot').className = 'status-dot' + (state === 'syncing' ? ' syncing' : '');
+  document.getElementById('sync-label').textContent = label;
+}
+
+// ═══════════════════════════════════════════════════════
+//  BOX MANAGEMENT
+// ═══════════════════════════════════════════════════════
+// boxes = array of { boxNum, boxType (BOX_TYPES id), items: [ { lineIdx, sku, assortment, qty } ] }
+let boxes = [];
+let currentBoxIdx = 0;
+
+function initBoxes() {
+  // Box 1 starts automatically — no box type yet, will be set when first New Box is tapped
+  // Actually: we require box type selection at the START of an order too
+  boxes = [];
+  currentBoxIdx = 0;
+}
+
+function currentBox() { return boxes[currentBoxIdx]; }
+
+function addToCurrentBox(lineIdx, sku, assortment, qty) {
+  if (!currentBox()) return;
+  const existing = currentBox().items.find(i => i.lineIdx === lineIdx);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    currentBox().items.push({ lineIdx, sku, assortment, qty });
+  }
+  updateBoxStatusBar();
+  saveProgress();
+}
+
+function updateBoxStatusBar() {
+  const box = currentBox();
+  if (!box) return;
+  const totalItems = box.items.reduce((sum, i) => sum + i.qty, 0);
+  document.getElementById('box-label').textContent = `Box ${box.boxNum} · ${box.boxType}`;
+  document.getElementById('box-item-count').textContent = totalItems;
+}
+
+function requestNewBox() {
+  // Show box type selector modal
+  renderBoxTypeModal();
+  document.getElementById('box-type-modal').classList.remove('hidden');
+}
+
+function cancelNewBox() {
+  document.getElementById('box-type-modal').classList.add('hidden');
+}
+
+function renderBoxTypeModal() {
+  const grid = document.getElementById('box-type-grid');
+  grid.innerHTML = BOX_TYPES.map(bt => `
+    <button class="box-type-btn" onclick="selectBoxType('${bt.id}')">
+      <div class="box-type-id">${bt.id}</div>
+      <div class="box-type-name">${bt.name}</div>
+      <div class="box-type-dims">${bt.dims}</div>
+    </button>
+  `).join('');
+}
+
+function selectBoxType(boxTypeId) {
+  document.getElementById('box-type-modal').classList.add('hidden');
+  if (boxes.length === 0) {
+    // First box of the order
+    boxes.push({ boxNum: 1, boxType: boxTypeId, items: [] });
+    currentBoxIdx = 0;
+  } else {
+    // Close current box, open new one
+    currentBoxIdx = boxes.length;
+    boxes.push({ boxNum: boxes.length + 1, boxType: boxTypeId, items: [] });
+  }
+  updateBoxStatusBar();
+  saveProgress();
+  beep('good');
+}
+
+// ═══════════════════════════════════════════════════════
+//  OPEN / RESUME ORDER
+// ═══════════════════════════════════════════════════════
+let order = null;
+let lines = [];
+let lineIdx = 0;
+let scanLocked = false;
+let manualVisible = false;
+let manualStep1Value = null;
+
+function openOrder(shipNum) {
+  const saved = loadSelection(currentUser, shipNum);
+  if (saved) {
+    order = saved.order;
+    lines = saved.lines;
+    boxes = saved.boxes || [];
+    currentBoxIdx = saved.currentBoxIdx || 0;
+    lineIdx = lines.findIndex(l => l.status === 'pending');
+    if (lineIdx === -1) lineIdx = lines.length;
+  } else {
+    const o = orderListOrders.find(x => x.shipNum === shipNum);
+    if (!o) return;
+    order = { shipNum: o.shipNum, customer: o.customer, po: o.po, priority: o.priority, date: o.date };
+    lines = o.lines.map(l => ({
+      ...l,
+      assortment: parseAssortment(l),
+      scanned: 0,
+      status: 'pending',
+      manualEntry: false
+    }));
+    lineIdx = 0;
+    initBoxes();
+    saveProgress();
+  }
+  buildUpcMap();
+
+  // If no boxes yet, immediately show box type selector for Box 1
+  if (boxes.length === 0) {
+    renderSelectionScreen();
+    goTo('screen-pick');
+    setTimeout(() => {
+      renderBoxTypeModal();
+      // Update modal title for first box
+      document.querySelector('.modal-title').textContent = 'Select Box Type — Box 1';
+      document.querySelector('.modal-sub').textContent = 'Choose the box you are starting with';
+      document.getElementById('box-type-modal').classList.remove('hidden');
+    }, 200);
+  } else {
+    updateBoxStatusBar();
+    renderSelectionScreen();
+    goTo('screen-pick');
+  }
+}
+
+function exitSelection() {
+  saveProgress();
+  cancelManual();
+  cancelNewBox();
+  goToOrderList();
+}
+
+// ═══════════════════════════════════════════════════════
+//  UPC MAP
+// ═══════════════════════════════════════════════════════
+let UPC_MAP = {};
+function buildUpcMap() {
+  UPC_MAP = {};
+  lines.forEach(l => (l.upcs || []).forEach(u => UPC_MAP[u] = l.sku));
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goToOrderList() { loadOrderList(); goTo('screen-orderlist'); }
+
+// ═══════════════════════════════════════════════════════
+//  SCANNER
+// ═══════════════════════════════════════════════════════
+let scanBuffer = '';
+let scanTimer = null;
+let lastKeyTime = 0;
+const SCANNER_SPEED_MS = 60;
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('screen-pick').classList.contains('active')) return;
+  if (!document.getElementById('box-type-modal').classList.contains('hidden')) return;
+  if (document.activeElement === document.getElementById('manual-input-1')) return;
+  if (document.activeElement === document.getElementById('manual-input-2')) return;
+  if (scanLocked) return;
+
+  const now = Date.now();
+  if (e.key === 'Enter') {
+    const raw = scanBuffer.trim();
+    scanBuffer = ''; lastKeyTime = 0; clearTimeout(scanTimer);
+    if (raw.length >= 4) processScan(raw);
+    return;
+  }
+  if (e.key.length === 1) {
+    if (scanBuffer.length > 0 && (now - lastKeyTime) > SCANNER_SPEED_MS) scanBuffer = '';
+    scanBuffer += e.key;
+    lastKeyTime = now;
+    clearTimeout(scanTimer);
+    scanTimer = setTimeout(() => {
+      const raw = scanBuffer.trim();
+      scanBuffer = '';
+      if (raw.length >= 4) processScan(raw);
+    }, 300);
+  }
+});
+
+function processScan(raw) {
+  const line = lines[lineIdx];
+  if (!line) return;
+
+  // Guard: must have a box selected
+  if (!currentBox()) {
+    requestNewBox();
+    return;
+  }
+
+  const scannedSku = UPC_MAP[raw] || raw;
+  if (scannedSku !== line.sku) {
+    flashCard('nomatch');
+    setFeedback('bad', `✗ Wrong item — expected ${line.assortment || line.sku}`);
+    beep('bad');
+    return;
+  }
+
+  if (line.scanned >= line.qty) { scanLocked = true; return; }
+
+  line.scanned++;
+  addToCurrentBox(lineIdx, line.sku, line.assortment || line.sku, 1);
+  updateCounter();
+  beep('good');
+  setFeedback('good', `✓ Scan ${line.scanned} of ${line.qty}`);
+  flashCard('match');
+
+  if (line.scanned >= line.qty) {
+    scanLocked = true;
+    setFeedback('done-all', `✓ ${line.qty} of ${line.qty} — complete!`);
+    beep('complete');
+    saveProgress();
+    setTimeout(() => {
+      line.status = 'done';
+      updateProgress();
+      saveProgress();
+      advanceLine();
+    }, 600);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER SELECTION SCREEN
+// ═══════════════════════════════════════════════════════
+function renderSelectionScreen() {
+  document.getElementById('p-shipnum').textContent = order.shipNum;
+  document.getElementById('p-customer').textContent = order.customer;
+  if (lineIdx < lines.length) renderCurrentLine();
+  else showAllDone();
+  updateProgress();
+  updateBoxStatusBar();
+}
+
+function renderCurrentLine() {
+  scanLocked = false;
+  scanBuffer = '';
+  cancelManual();
+  const line = lines[lineIdx];
+  if (!line) { showAllDone(); return; }
+  document.getElementById('item-card').style.display = '';
+  document.getElementById('all-done-card').style.display = 'none';
+  document.getElementById('item-linenum').textContent = `Line ${lineIdx + 1} of ${lines.length}`;
+  document.getElementById('item-assort').textContent = line.assortment || '';
+  document.getElementById('item-desc').textContent = line.description;
+  document.getElementById('item-sku').textContent = `SKU: ${line.sku}`;
+  document.getElementById('item-loc').innerHTML = `<div><span class="loc-label">📍 Go to location</span>${line.location}</div>`;
+  updateCounter();
+  setFeedback('idle', '👆 Ready — scan item barcode');
+  document.getElementById('item-card').className = 'item-card';
+}
+
+function updateCounter() {
+  const line = lines[lineIdx];
+  if (!line) return;
+  const numEl = document.getElementById('counter-num');
+  numEl.textContent = line.scanned;
+  document.getElementById('counter-needed').textContent = line.qty;
+  numEl.className = 'counter-num' +
+    (line.scanned >= line.qty ? ' complete' : line.scanned > 0 ? ' partial' : '');
+}
+
+function updateProgress() {
+  const done = lines.filter(l => l.status === 'done' || l.status === 'short').length;
+  const pct = lines.length ? (done / lines.length) * 100 : 0;
+  document.getElementById('p-progress').style.width = pct + '%';
+  document.getElementById('p-progress-text').textContent = `${done} of ${lines.length} lines complete`;
+}
+
+function showAllDone() {
+  document.getElementById('item-card').style.display = 'none';
+  document.getElementById('all-done-card').style.display = 'flex';
+}
+
+function flashCard(cls) {
+  const card = document.getElementById('item-card');
+  card.classList.add(cls);
+  setTimeout(() => card.classList.remove(cls), 600);
+}
+
+function setFeedback(type, msg) {
+  const el = document.getElementById('scan-feedback');
+  el.className = 'scan-feedback ' + type;
+  el.textContent = msg;
+}
+
+// ═══════════════════════════════════════════════════════
+//  MANUAL QUANTITY
+// ═══════════════════════════════════════════════════════
+function startManual() {
+  const line = lines[lineIdx];
+  if (!line) return;
+  if (!currentBox()) { requestNewBox(); return; }
+  manualVisible = true;
+  manualStep1Value = null;
+  document.getElementById('manual-entry').classList.add('visible');
+  document.getElementById('manual-label-text').textContent = 'Step 1 of 2 — Enter quantity selected:';
+  document.getElementById('manual-max-hint').textContent = `Max: ${line.qty}`;
+  document.getElementById('manual-input-1').value = '';
+  document.getElementById('manual-input-1').classList.remove('error');
+  document.getElementById('manual-confirm-row').style.display = 'none';
+  document.getElementById('manual-input-2').value = '';
+  document.getElementById('manual-input-2').classList.remove('error');
+  document.getElementById('manual-error').classList.remove('visible');
+  document.getElementById('manual-error').textContent = '';
+  document.getElementById('manual-input-1').focus();
+}
+
+function manualStep() {
+  const line = lines[lineIdx];
+  const val = parseInt(document.getElementById('manual-input-1').value);
+  if (isNaN(val) || val < 0) {
+    showManualError('Please enter a valid quantity.');
+    document.getElementById('manual-input-1').classList.add('error');
+    return;
+  }
+  if (val > line.qty) {
+    showManualError(`Cannot exceed ordered quantity of ${line.qty}.`);
+    document.getElementById('manual-input-1').classList.add('error');
+    return;
+  }
+  manualStep1Value = val;
+  document.getElementById('manual-input-1').classList.remove('error');
+  document.getElementById('manual-label-text').textContent = 'Step 2 of 2 — Re-enter to confirm:';
+  document.getElementById('manual-confirm-row').style.display = 'flex';
+  document.getElementById('manual-input-2').value = '';
+  document.getElementById('manual-input-2').focus();
+  document.getElementById('manual-error').classList.remove('visible');
+}
+
+function manualConfirm() {
+  const line = lines[lineIdx];
+  const val2 = parseInt(document.getElementById('manual-input-2').value);
+  if (isNaN(val2) || val2 < 0) {
+    showManualError('Please re-enter the quantity.');
+    document.getElementById('manual-input-2').classList.add('error');
+    return;
+  }
+  if (val2 !== manualStep1Value) {
+    showManualError('Quantities do not match. Please try again.');
+    document.getElementById('manual-input-1').value = '';
+    document.getElementById('manual-input-2').value = '';
+    document.getElementById('manual-input-2').classList.add('error');
+    manualStep1Value = null;
+    document.getElementById('manual-label-text').textContent = 'Step 1 of 2 — Enter quantity selected:';
+    document.getElementById('manual-confirm-row').style.display = 'none';
+    document.getElementById('manual-input-1').focus();
+    return;
+  }
+  line.scanned = manualStep1Value;
+  line.manualEntry = true;
+  addToCurrentBox(lineIdx, line.sku, line.assortment || line.sku, manualStep1Value);
+  updateCounter();
+  if (line.scanned >= line.qty) {
+    setFeedback('done-all', `✓ ${line.qty} of ${line.qty} — tap Confirm`);
+  } else {
+    setFeedback('warn', `${line.scanned} entered manually — ${line.qty - line.scanned} short`);
+  }
+  cancelManual();
+}
+
+function cancelManual() {
+  manualVisible = false;
+  manualStep1Value = null;
+  const el = document.getElementById('manual-entry');
+  if (el) el.classList.remove('visible');
+}
+
+function showManualError(msg) {
+  const errEl = document.getElementById('manual-error');
+  errEl.textContent = msg;
+  errEl.classList.add('visible');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONFIRM / SHORT SHIP / ADVANCE
+// ═══════════════════════════════════════════════════════
+function confirmLine() {
+  const line = lines[lineIdx];
+  if (!line) return;
+  if (line.scanned === 0 && line.qty > 0) {
+    if (!confirm('Nothing scanned yet. Confirm as 0 selected?')) return;
+  }
+  line.status = line.scanned >= line.qty ? 'done' : 'short';
+  updateProgress();
+  saveProgress();
+  advanceLine();
+}
+
+function confirmShort() {
+  const line = lines[lineIdx];
+  if (!line) return;
+  line.status = 'short';
+  updateProgress();
+  saveProgress();
+  advanceLine();
+}
+
+function advanceLine() {
+  let next = lines.findIndex((l, i) => i > lineIdx && l.status === 'pending');
+  if (next === -1) next = lines.findIndex(l => l.status === 'pending');
+  if (next === -1) {
+    lineIdx = lines.length;
+    saveProgress();
+    showAllDone();
+    updateProgress();
+  } else {
+    lineIdx = next;
+    renderCurrentLine();
+  }
+}
+
+function saveProgress() {
+  if (order && currentUser)
+    saveSelection(currentUser, order.shipNum, { order, lines, boxes, currentBoxIdx });
+}
+
+// ═══════════════════════════════════════════════════════
+//  OVERVIEW SHEET
+// ═══════════════════════════════════════════════════════
+function showOverview() {
+  // Box summary
+  const boxSection = document.getElementById('ov-box-section');
+  if (boxes.length > 0) {
+    boxSection.innerHTML = `
+      <div class="ov-box-header">📦 Boxes (${boxes.length})</div>
+      ${boxes.map(b => {
+        const totalItems = b.items.reduce((s, i) => s + i.qty, 0);
+        const lineList = b.items.map(i =>
+          `<div class="ov-box-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`
+        ).join('');
+        return `<div class="ov-box-card">
+          <div class="ov-box-title">Box ${b.boxNum} · ${b.boxType} · ${totalItems} items</div>
+          ${lineList || '<div class="ov-box-line" style="opacity:0.4">Empty</div>'}
+        </div>`;
+      }).join('')}
+    `;
+  } else {
+    boxSection.innerHTML = '';
+  }
+
+  // Line items
+  const list = document.getElementById('overview-list');
+  list.innerHTML = lines.map((l, i) => {
+    let statusClass = 'pending', statusIcon = '○';
+    if (i === lineIdx && l.status === 'pending') { statusClass = 'current'; statusIcon = '→'; }
+    else if (l.status === 'done')  { statusClass = 'done';       statusIcon = '✓'; }
+    else if (l.status === 'short') { statusClass = 'short-pick'; statusIcon = '!'; }
+    const qtyDisplay = l.status === 'pending' ? `${l.scanned}/${l.qty}` :
+                       l.status === 'short'   ? `${l.scanned}/${l.qty} SHORT` :
+                                                `${l.qty}/${l.qty}`;
+    const manualFlag = l.manualEntry ? `<div class="ov-manual-flag">⚠ manually entered</div>` : '';
+    return `<div class="ov-item ${l.status === 'done' ? 'done' : l.status === 'short' ? 'short-pick' : ''}" onclick="jumpTo(${i})">
+      <div class="ov-status ${statusClass}">${statusIcon}</div>
+      <div class="ov-info">
+        <div class="ov-assort">${l.assortment || l.sku}</div>
+        <div class="ov-desc">${l.description}</div>
+        ${manualFlag}
+      </div>
+      <div class="ov-qty">${qtyDisplay}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('overview-sheet').style.display = 'flex';
+}
+
+function hideOverview(e) {
+  if (!e || e.target === document.getElementById('overview-sheet'))
+    document.getElementById('overview-sheet').style.display = 'none';
+}
+
+function jumpTo(i) {
+  lineIdx = i;
+  lines[i].status = 'pending';
+  lines[i].scanned = 0;
+  lines[i].manualEntry = false;
+  hideOverview();
+  renderCurrentLine();
+  updateProgress();
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONFIRM SCREEN
+// ═══════════════════════════════════════════════════════
+function goToConfirm() {
+  const pending = lines.filter(l => l.status === 'pending').length;
+  if (pending > 0 && !confirm(`${pending} line(s) not yet confirmed. Continue to review?`)) return;
+  document.getElementById('sync-fail-banner').classList.remove('visible');
+  renderConfirm();
+  goTo('screen-confirm');
+}
+
+function renderConfirm() {
+  const done    = lines.filter(l => l.status === 'done').length;
+  const shorts  = lines.filter(l => l.status === 'short');
+  const manuals = lines.filter(l => l.manualEntry);
+  const pending = lines.filter(l => l.status === 'pending').length;
+
+  document.getElementById('confirm-summary').innerHTML = `
+    <div class="summary-row"><span class="summary-label">Shipment</span><span class="summary-value">${order.shipNum}</span></div>
+    <div class="summary-row"><span class="summary-label">Customer</span><span class="summary-value">${order.customer}</span></div>
+    <div class="summary-row"><span class="summary-label">PO Number</span><span class="summary-value">${order.po}</span></div>
+    <div class="summary-row"><span class="summary-label">Fully selected</span><span class="summary-value ok">${done} lines</span></div>
+    <div class="summary-row"><span class="summary-label">Short ships</span><span class="summary-value ${shorts.length > 0 ? 'warn' : 'ok'}">${shorts.length} lines</span></div>
+    <div class="summary-row"><span class="summary-label">Boxes</span><span class="summary-value ok">${boxes.length}</span></div>
+    ${manuals.length > 0 ? `<div class="summary-row"><span class="summary-label">Manual entries</span><span class="summary-value info">${manuals.length} lines</span></div>` : ''}
+    ${pending > 0 ? `<div class="summary-row"><span class="summary-label">Unconfirmed</span><span class="summary-value warn">${pending} lines</span></div>` : ''}
+  `;
+
+  // Box summary
+  const boxList = document.getElementById('box-summary-list');
+  boxList.innerHTML = boxes.map(b => {
+    const totalItems = b.items.reduce((s, i) => s + i.qty, 0);
+    const lineItems = b.items.map(i =>
+      `<div class="box-summary-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`
+    ).join('');
+    return `<div class="box-summary-item">
+      <div class="box-summary-header">
+        <div class="box-summary-name">Box ${b.boxNum} · ${b.boxType}</div>
+        <div class="box-summary-count">${totalItems} items</div>
+      </div>
+      <div class="box-summary-lines">
+        ${lineItems || '<div style="font-size:12px;color:var(--text2);opacity:0.5">Empty</div>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Short ships
+  if (shorts.length > 0) {
+    document.getElementById('short-section').style.display = 'block';
+    document.getElementById('short-list').innerHTML = shorts.map(s => `
+      <div class="short-item">
+        <div>
+          <div class="short-assort">${s.assortment || s.sku}</div>
+          <div class="short-desc">${s.description}</div>
+        </div>
+        <div>
+          <div class="short-qty-display">${s.scanned} / ${s.qty}</div>
+          <div class="short-qty-label">selected / ordered</div>
+        </div>
+      </div>`).join('');
+  } else {
+    document.getElementById('short-section').style.display = 'none';
+  }
+
+  // Manual entries
+  if (manuals.length > 0) {
+    document.getElementById('manual-section').style.display = 'block';
+    document.getElementById('manual-list').innerHTML = manuals.map(m => `
+      <div class="manual-item">
+        <div>
+          <div class="manual-item-assort">${m.assortment || m.sku}</div>
+          <div class="manual-item-desc">${m.description}</div>
+        </div>
+        <div>
+          <div class="manual-item-qty">${m.scanned} / ${m.qty}</div>
+          <div class="manual-item-label">manually entered</div>
+        </div>
+      </div>`).join('');
+  } else {
+    document.getElementById('manual-section').style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  SYNC
+// ═══════════════════════════════════════════════════════
+function doSync() {
+  document.getElementById('sync-fail-banner').classList.remove('visible');
+  goTo('screen-sync');
+  attemptSyncToAcumatica(order.shipNum, { order, lines, boxes });
+}
+
+function attemptSyncToAcumatica(shipNum, data) {
+  const willSucceed = true; // set Math.random() > 0.2 to test failure path
+  setTimeout(() => {
+    if (willSucceed) {
+      removeSelection(currentUser, shipNum);
+      orderListOrders = orderListOrders.filter(o => o.shipNum !== shipNum);
+      const boxCount = data.boxes ? data.boxes.length : 0;
+      document.getElementById('success-detail').textContent =
+        `${data.order.shipNum} · ${data.lines.length} lines · ${boxCount} box${boxCount !== 1 ? 'es' : ''}`;
+      goTo('screen-success');
+      beep('sync');
+    } else {
+      goTo('screen-confirm');
+      document.getElementById('sync-fail-banner').classList.add('visible');
+    }
+  }, 2000);
+}
+
+function hideSyncFail() { document.getElementById('sync-fail-banner').classList.remove('visible'); }
+
+// ═══════════════════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════════════════
+let audioCtx = null;
+document.addEventListener('touchstart', () => {
+  if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+}, { once: true });
+
+function beep(type) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    const plays = {
+      good:     [{ freq:1400, dur:0.07, type:'sine',     vol:0.3  }],
+      bad:      [{ freq:220,  dur:0.3,  type:'sawtooth', vol:0.4  }],
+      complete: [{ freq:1000, dur:0.1,  type:'sine',     vol:0.3,  delay:0    },
+                 { freq:1600, dur:0.15, type:'sine',     vol:0.3,  delay:0.12 }],
+      sync:     [{ freq:880,  dur:0.12, type:'sine',     vol:0.25, delay:0    },
+                 { freq:1100, dur:0.12, type:'sine',     vol:0.25, delay:0.14 },
+                 { freq:1320, dur:0.2,  type:'sine',     vol:0.25, delay:0.28 }],
+    };
+    (plays[type] || []).forEach(p => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.type = p.type; o.frequency.value = p.freq;
+      const start = t + (p.delay || 0);
+      g.gain.setValueAtTime(p.vol, start);
+      g.gain.exponentialRampToValueAtTime(0.001, start + p.dur);
+      o.start(start); o.stop(start + p.dur + 0.01);
+    });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+goTo('screen-login');
+</script>
+</body>
+</html>
