@@ -180,7 +180,16 @@
   .empty-icon  { font-size: 48px; opacity: 0.3; }
   .empty-title { font-size: 18px; font-weight: 700; color: var(--text2); }
   .empty-sub   { font-size: 14px; color: var(--text2); opacity: 0.6; }
-  .logout-row  { padding: 16px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; }
+  .logout-row  { padding: 16px 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+
+  /* HISTORY BUTTON */
+  .history-btn {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; font-family: var(--mono); font-size: 12px; color: var(--text2);
+    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s;
+    letter-spacing: 0.06em;
+  }
+  .history-btn:active { border-color: var(--info); color: var(--info); }
 
   /* ══════════════════════════════════════
      BOX TYPE SELECTOR MODAL
@@ -469,7 +478,137 @@
   .success-title { font-size:26px; font-weight:700; }
   .success-sub   { font-family:var(--mono); font-size:13px; color:var(--text2); }
 
+  /* ══════════════════════════════════════
+     HISTORY SCREENS
+  ══════════════════════════════════════ */
+
+  /* Shared list styles for history drill-down */
+  .hist-scroll { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+
+  .hist-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .hist-card:active { border-color: var(--accent); background: var(--surface2); }
+  .hist-card-left { display: flex; flex-direction: column; gap: 4px; }
+  .hist-card-title { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--accent); }
+  .hist-card-sub   { font-size: 13px; color: var(--text2); }
+  .hist-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .hist-card-count { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+  .hist-chevron    { font-size: 18px; color: var(--text2); }
+
+  /* Sync status badges */
+  .sync-badge {
+    border-radius: 6px; padding: 3px 8px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sync-confirmed { background: #052e16; color: var(--success); border: 1px solid var(--success); }
+  .sync-failed    { background: #2d0a0a; color: var(--danger);  border: 1px solid var(--danger); }
+  .sync-partial   { background: #2d1a00; color: var(--warning); border: 1px solid var(--warning); }
+  .sync-resolved  { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* History order card */
+  .hist-order-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; cursor: pointer; transition: border-color 0.15s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .hist-order-card:active { background: var(--surface2); }
+  .hist-order-card.confirmed { border-left: 3px solid var(--success); }
+  .hist-order-card.failed    { border-left: 3px solid var(--danger); }
+  .hist-order-card.partial   { border-left: 3px solid var(--warning); }
+  .hist-order-top  { display: flex; align-items: center; justify-content: space-between; }
+  .hist-order-num  { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--text); }
+  .hist-order-meta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hist-order-meta-item { font-family: var(--mono); font-size: 12px; color: var(--text2); }
+  .hist-order-meta-item span { color: var(--text); }
+
+  /* History detail screen */
+  .hist-detail-content { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .hist-detail-section { display: flex; flex-direction: column; gap: 8px; }
+
+  .hist-line-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .hist-line-assort { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--accent); }
+  .hist-line-desc   { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .hist-line-qty    { font-family: var(--mono); font-size: 15px; color: var(--text); text-align: right; white-space: nowrap; }
+  .hist-line-short  { font-size: 11px; color: var(--danger); text-align: right; }
+
+  .hist-box-item {
+    background: #0d1a0d; border: 1px solid #22c55e30; border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .hist-box-title { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--success); margin-bottom: 6px; }
+  .hist-box-line  { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
+  .hist-box-line span { color: var(--text); }
+
+  .resend-section { padding: 0; }
+  .resend-card {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .resend-title { font-weight: 700; font-size: 15px; }
+  .resend-sub   { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .resend-failed-card {
+    background: #2d0a0a; border: 1px solid var(--danger); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .resend-failed-title { font-weight: 700; font-size: 15px; color: var(--danger); }
+  .resend-failed-sub   { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .resend-step  { font-family: var(--mono); font-size: 12px; color: var(--warning); }
+
   #scan-trap { position:fixed; top:-9999px; left:-9999px; opacity:0; width:1px; height:1px; }
+
+  /* ══════════════════════════════════════
+     SUPERVISOR PIN MODAL
+  ══════════════════════════════════════ */
+  .pin-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; animation: fadeIn 0.15s ease;
+  }
+  .pin-overlay.hidden { display: none; }
+  .pin-sheet {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 28px 24px; width: 100%; max-width: 360px;
+    display: flex; flex-direction: column; align-items: center; gap: 20px;
+  }
+  .pin-title    { font-size: 17px; font-weight: 700; text-align: center; }
+  .pin-sub      { font-size: 13px; color: var(--text2); text-align: center; margin-top: -12px; }
+  .pin-display  {
+    display: flex; gap: 10px; justify-content: center;
+  }
+  .pin-dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--border); background: transparent;
+    transition: all 0.15s;
+  }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+  .pin-dot.error  { background: var(--danger); border-color: var(--danger); }
+  .pin-keypad {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;
+  }
+  .pin-key {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 0; font-family: var(--mono); font-size: 22px; font-weight: 700;
+    color: var(--text); cursor: pointer; transition: all 0.12s; text-align: center;
+    user-select: none;
+  }
+  .pin-key:active { background: var(--border); transform: scale(0.94); }
+  .pin-key.delete { font-size: 18px; color: var(--text2); }
+  .pin-key.empty  { background: transparent; border-color: transparent; cursor: default; }
+  .pin-error-msg  {
+    font-family: var(--mono); font-size: 12px; color: var(--danger);
+    min-height: 18px; text-align: center;
+  }
+  .pin-cancel {
+    font-family: var(--mono); font-size: 13px; color: var(--text2);
+    cursor: pointer; padding: 8px; text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -544,6 +683,7 @@
   <div class="last-refresh" id="last-refresh-label">—</div>
   <div class="orderlist-scroll" id="orderlist-container"></div>
   <div class="logout-row">
+    <button class="history-btn" onclick="goTo('screen-history-users')">🕒 History</button>
     <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
   </div>
 </div>
@@ -568,7 +708,6 @@
     </div>
   </div>
 
-  <!-- BOX STATUS BAR -->
   <div class="box-status-bar">
     <div class="box-status-left">
       <div class="box-icon">📦</div>
@@ -606,8 +745,6 @@
           <button class="btn btn-outline" onclick="startManual()" style="font-size:13px;padding:8px 14px;">Enter qty manually</button>
         </div>
       </div>
-
-      <!-- MANUAL ENTRY -->
       <div class="manual-entry" id="manual-entry">
         <div class="manual-header">
           <div class="manual-label" id="manual-label-text">Step 1 of 2 — Enter quantity selected:</div>
@@ -624,13 +761,11 @@
         <div class="manual-error" id="manual-error"></div>
         <button class="btn btn-outline btn-sm" onclick="cancelManual()" style="align-self:flex-start;">Cancel</button>
       </div>
-
       <div class="pick-actions">
         <button class="btn btn-ghost" onclick="confirmShort()">Short Ship</button>
         <button class="btn btn-success" onclick="confirmLine()" style="flex:2">Confirm ✓</button>
       </div>
     </div>
-
     <div id="all-done-card" style="display:none; background:var(--surface); border:2px solid var(--success); border-radius:14px; padding:32px; text-align:center; flex-direction:column; align-items:center; gap:16px;">
       <div style="font-size:48px;">✓</div>
       <div style="font-size:22px; font-weight:700;">All Lines Selected</div>
@@ -651,7 +786,6 @@
       <div class="sheet-title">All Lines</div>
       <div class="sheet-close" onclick="hideOverview()">✕</div>
     </div>
-    <!-- Box summary -->
     <div class="ov-box-section" id="ov-box-section"></div>
     <div class="overview-list" id="overview-list"></div>
   </div>
@@ -667,22 +801,18 @@
   <div class="confirm-content">
     <div class="section-label">Shipment Summary</div>
     <div class="summary-card" id="confirm-summary"></div>
-
     <div id="box-confirm-section">
       <div class="section-label">Boxes</div>
       <div class="box-summary-list" id="box-summary-list"></div>
     </div>
-
     <div id="short-section" style="display:none;">
       <div class="section-label" style="color:var(--danger);">⚠ Short Ships</div>
       <div class="short-list" id="short-list"></div>
     </div>
-
     <div id="manual-section" style="display:none;">
       <div class="section-label" style="color:var(--warning);">⚠ Manually Entered Quantities — Supervisor Review Recommended</div>
       <div class="manual-list" id="manual-list"></div>
     </div>
-
     <div class="sync-fail-banner" id="sync-fail-banner">
       <div class="sync-fail-title">⚠ Sync Failed</div>
       <div class="sync-fail-sub">Could not connect to Acumatica. Your selection is saved and will retry when you're back online.</div>
@@ -718,26 +848,102 @@
   </div>
 </div>
 
+<!-- ═══════════ SUPERVISOR PIN MODAL ═══════════ -->
+<div class="pin-overlay hidden" id="pin-modal">
+  <div class="pin-sheet">
+    <div class="pin-title">Supervisor Authorization</div>
+    <div class="pin-sub" id="pin-sub">Enter supervisor PIN to continue</div>
+    <div class="pin-display" id="pin-display"></div>
+    <div class="pin-error-msg" id="pin-error-msg"></div>
+    <div class="pin-keypad">
+      <div class="pin-key" onclick="pinKey('1')">1</div>
+      <div class="pin-key" onclick="pinKey('2')">2</div>
+      <div class="pin-key" onclick="pinKey('3')">3</div>
+      <div class="pin-key" onclick="pinKey('4')">4</div>
+      <div class="pin-key" onclick="pinKey('5')">5</div>
+      <div class="pin-key" onclick="pinKey('6')">6</div>
+      <div class="pin-key" onclick="pinKey('7')">7</div>
+      <div class="pin-key" onclick="pinKey('8')">8</div>
+      <div class="pin-key" onclick="pinKey('9')">9</div>
+      <div class="pin-key empty"></div>
+      <div class="pin-key" onclick="pinKey('0')">0</div>
+      <div class="pin-key delete" onclick="pinBackspace()">⌫</div>
+    </div>
+    <div class="pin-cancel" onclick="cancelPin()">Cancel</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     HISTORY SCREENS
+═══════════════════════════════════════════ -->
+
+<!-- SCREEN: HISTORY — USER LIST -->
+<div class="screen" id="screen-history-users">
+  <div class="header">
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="goTo('screen-orderlist')">← Orders</button>
+    <div class="header-logo">HISTORY</div>
+    <div style="width:60px;"></div>
+  </div>
+  <div style="padding:14px 18px 6px;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);">Selectors on this tablet</div>
+  </div>
+  <div class="hist-scroll" id="hist-users-list"></div>
+</div>
+
+<!-- SCREEN: HISTORY — DATE LIST -->
+<div class="screen" id="screen-history-dates">
+  <div class="header">
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="goTo('screen-history-users')">← Users</button>
+    <div class="header-logo" id="hist-dates-title">HISTORY</div>
+    <div style="width:60px;"></div>
+  </div>
+  <div style="padding:14px 18px 6px;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);">Select a date</div>
+  </div>
+  <div class="hist-scroll" id="hist-dates-list"></div>
+</div>
+
+<!-- SCREEN: HISTORY — ORDER LIST FOR DATE -->
+<div class="screen" id="screen-history-orders">
+  <div class="header">
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="goTo('screen-history-dates')">← Dates</button>
+    <div class="header-logo" id="hist-orders-title">HISTORY</div>
+    <div style="width:60px;"></div>
+  </div>
+  <div style="padding:14px 18px 6px;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);" id="hist-orders-sub">Orders synced on this date</div>
+  </div>
+  <div class="hist-scroll" id="hist-orders-list"></div>
+</div>
+
+<!-- SCREEN: HISTORY — ORDER DETAIL -->
+<div class="screen" id="screen-history-detail">
+  <div class="header">
+    <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px;" onclick="goTo('screen-history-orders')">← Back</button>
+    <div class="header-logo" id="hist-detail-title">DETAIL</div>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="hist-detail-content" id="hist-detail-content"></div>
+</div>
+
 <script>
 'use strict';
 
 // ═══════════════════════════════════════════════════════
-//  CONFIG — flip USE_LIVE_API to true to go live
+//  CONFIG
 // ═══════════════════════════════════════════════════════
-const USE_LIVE_API = true;
-const API_BASE     = 'https://bigleaguecs.acumatica.com';
-const API_COMPANY  = 'Testing Tenant';
-const API_VERSION  = '24.200.001';
+const USE_LIVE_API      = true;    // LIVE — hitting Acumatica via proxy
+const API_BASE          = 'http://64.227.26.119:8095';
+const API_COMPANY       = 'Testing Tenant';
+const API_VERSION       = '24.200.001';
+const SUPERVISOR_PIN    = '123456'; // Change this to set the supervisor PIN
 
 // ═══════════════════════════════════════════════════════
 //  ACUMATICA API LAYER
 // ═══════════════════════════════════════════════════════
-
 async function apiLogin(username, password) {
   const resp = await fetch(`${API_BASE}/entity/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
     body: JSON.stringify({ name: username, password: password, company: API_COMPANY })
   });
   if (resp.status === 204) return { ok: true };
@@ -746,19 +952,12 @@ async function apiLogin(username, password) {
 }
 
 async function apiLogout() {
-  try {
-    await fetch(`${API_BASE}/entity/auth/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    });
-  } catch(e) {}
+  try { await fetch(`${API_BASE}/entity/auth/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
 }
 
 async function apiFetchOrders(username) {
-  // Pull shipments assigned to this picker, status Assigned or Being Picked
   const filter = `AssignedPicker eq '${username}' and (Status eq 'Assigned' or Status eq 'Being Picked')`;
-  const expand = 'Details';
-  const url = `${API_BASE}/entity/Default/${API_VERSION}/Shipment?$filter=${encodeURIComponent(filter)}&$expand=${expand}`;
+  const url = `${API_BASE}/entity/Default/${API_VERSION}/Shipment?$filter=${encodeURIComponent(filter)}&$expand=Details`;
   const resp = await fetch(url, { credentials: 'include' });
   if (!resp.ok) throw new Error(`Fetch orders failed: ${resp.status}`);
   const data = await resp.json();
@@ -766,30 +965,22 @@ async function apiFetchOrders(username) {
 }
 
 function mapAcumaticaShipment(s) {
-  // Map Acumatica REST response shape → app's internal order shape
   const lines = (s.Details || []).map(d => ({
-    sku:          d.InventoryID?.value || '',
-    description:  d.Description?.value || '',
-    location:     d.LocationID?.value || '',
-    qty:          parseFloat(d.ShippedQty?.value || d.OrderQty?.value || 0),
-    type:         d.ItemType?.value || '',
-    postingClass: d.PostingClass?.value || '',
-    upcs:         [],           // UPCs not in pick list endpoint — barcode = SKU fallback
-    lineNbr:      d.LineNbr?.value,
+    sku: d.InventoryID?.value || '', description: d.Description?.value || '',
+    location: d.LocationID?.value || '', qty: parseFloat(d.ShippedQty?.value || d.OrderQty?.value || 0),
+    type: d.ItemType?.value || '', postingClass: d.PostingClass?.value || '',
+    upcs: [], lineNbr: d.LineNbr?.value,
   }));
   return {
-    shipNum:          s.ShipmentNbr?.value || '',
-    customer:         s.CustomerID?.value || '',
-    po:               s.CustomerOrderNbr?.value || '',
-    priority:         s.Priority?.value || 'Medium',
-    date:             (s.ShipmentDate?.value || '').slice(0, 10),
-    assignedSelector: s.AssignedPicker?.value || '',
-    lines,
+    shipNum: s.ShipmentNbr?.value || '', customer: s.CustomerID?.value || '',
+    po: s.CustomerOrderNbr?.value || '', priority: s.Priority?.value || 'Medium',
+    date: (s.ShipmentDate?.value || '').slice(0, 10),
+    assignedSelector: s.AssignedPicker?.value || '', lines,
   };
 }
 
 // ═══════════════════════════════════════════════════════
-//  BOX TYPES — matches Acumatica exactly
+//  BOX TYPES
 // ═══════════════════════════════════════════════════════
 const BOX_TYPES = [
   { id: 'SHIPPING', name: 'Standard Shipping Box', dims: '17.5 × 13 × 6.75 IN' },
@@ -806,7 +997,7 @@ const BOX_TYPES = [
 const MOCK_ORDERS = [
   {
     shipNum:'SHP0008725', customer:'City Electric Supply', po:'PO-8725',
-    priority:'Urgent', date:'2026-03-27', assignedSelector:'chip',
+    priority:'Urgent', date:'2026-04-03', assignedSelector:'chip',
     lines:[
       { sku:'75471', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', location:'A-14', qty:4, upcs:['746071754717'] },
       { sku:'16018', type:'Finished Good', postingClass:'ASSORTMENT', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct',   location:'C-07', qty:2, upcs:['746071160181'] },
@@ -815,7 +1006,7 @@ const MOCK_ORDERS = [
   },
   {
     shipNum:'SHP0008741', customer:'Ace Hardware Edi', po:'PO-8741',
-    priority:'Medium', date:'2026-03-27', assignedSelector:'chip',
+    priority:'Medium', date:'2026-04-03', assignedSelector:'chip',
     lines:[
       { sku:'16018', type:'Finished Good', postingClass:'ASSORTMENT', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct',  location:'C-07', qty:5, upcs:['746071160181'] },
       { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct',  location:'A-14', qty:2, upcs:['746071754656'] },
@@ -823,23 +1014,141 @@ const MOCK_ORDERS = [
   },
   {
     shipNum:'SHP0008743', customer:'Ace Hardware Edi', po:'PO-8743',
-    priority:'High', date:'2026-03-27', assignedSelector:'chip',
+    priority:'High', date:'2026-04-03', assignedSelector:'chip',
     lines:[
       { sku:'75471', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', location:'A-14', qty:4, upcs:['746071754717'] },
       { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct',  location:'A-14', qty:2, upcs:['746071754656'] },
       { sku:'16018', type:'Finished Good', postingClass:'ASSORTMENT', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct',  location:'C-07', qty:1, upcs:['746071160181'] },
     ]
   },
-  {
-    shipNum:'SHP0008745', customer:'Ace Hardware Edi', po:'PO-8745',
-    priority:'Low', date:'2026-03-27', assignedSelector:'chip',
-    lines:[
-      { sku:'75465', type:'Finished Good', postingClass:'ASSORTMENT', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', location:'A-14', qty:1, upcs:['746071754656'] },
-    ]
-  },
 ];
 
 const PRIORITY_ORDER = { 'Urgent':0, 'High':1, 'Medium':2, 'Low':3 };
+
+// ═══════════════════════════════════════════════════════
+//  MOCK HISTORY SEED DATA
+//  Simulates ~2 weeks of history across 3 selectors
+// ═══════════════════════════════════════════════════════
+const MOCK_HISTORY = [
+  // cbridges — today and recent days
+  {
+    shipNum:'SHP0008700', customer:'City Electric Supply', username:'cbridges',
+    syncedAt:'2026-04-03T14:22:00', lineCount:3, boxCount:1,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'K448N', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:4, qty:4, short:false },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:2, qty:2, short:false },
+      { assortment:'K448G', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:3, qty:3, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'SHIPPING', items:[{assortment:'K448N',qty:4},{assortment:'16018',qty:2},{assortment:'K448G',qty:3}] }]
+  },
+  {
+    shipNum:'SHP0008688', customer:'Fastenal - Boise', username:'cbridges',
+    syncedAt:'2026-04-03T10:05:00', lineCount:2, boxCount:1,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'75465', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:5, qty:5, short:false },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:3, qty:4, short:true },
+    ],
+    boxes:[{ boxNum:1, boxType:'SHIPPING', items:[{assortment:'75465',qty:5},{assortment:'16018',qty:3}] }]
+  },
+  {
+    shipNum:'SHP0008671', customer:'Grainger Industrial', username:'cbridges',
+    syncedAt:'2026-04-02T15:44:00', lineCount:4, boxCount:2,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'K448N', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:6, qty:6, short:false },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:4, qty:4, short:false },
+      { assortment:'K448G', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:2, qty:2, short:false },
+      { assortment:'75471', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:1, qty:1, short:false },
+    ],
+    boxes:[
+      { boxNum:1, boxType:'SHIPPING', items:[{assortment:'K448N',qty:6},{assortment:'16018',qty:4}] },
+      { boxNum:2, boxType:'SHIPPING', items:[{assortment:'K448G',qty:2},{assortment:'75471',qty:1}] }
+    ]
+  },
+  {
+    shipNum:'SHP0008655', customer:'Home Depot Pro', username:'cbridges',
+    syncedAt:'2026-04-01T11:30:00', lineCount:2, boxCount:1,
+    syncStatus:'failed', failedAtStep:'ConfirmPackList',
+    lines:[
+      { assortment:'K448N', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:3, qty:3, short:false },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:2, qty:2, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'SHIPPING', items:[{assortment:'K448N',qty:3},{assortment:'16018',qty:2}] }]
+  },
+  {
+    shipNum:'SHP0008640', customer:'Fastenal - Boise', username:'cbridges',
+    syncedAt:'2026-03-31T09:18:00', lineCount:3, boxCount:1,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'K448G', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:4, qty:5, short:true },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:3, qty:3, short:false },
+      { assortment:'75471', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:2, qty:2, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'SHIPPING', items:[{assortment:'K448G',qty:4},{assortment:'16018',qty:3},{assortment:'75471',qty:2}] }]
+  },
+
+  // jsmith — a few recent days
+  {
+    shipNum:'SHP0008715', customer:'Ace Hardware Edi', username:'jsmith',
+    syncedAt:'2026-04-03T13:10:00', lineCount:2, boxCount:1,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'K448N', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:3, qty:3, short:false },
+      { assortment:'75465', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:2, qty:2, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'SHIPPING', items:[{assortment:'K448N',qty:3},{assortment:'75465',qty:2}] }]
+  },
+  {
+    shipNum:'SHP0008698', customer:'Grainger Industrial', username:'jsmith',
+    syncedAt:'2026-04-02T09:55:00', lineCount:3, boxCount:1,
+    syncStatus:'partial', failedAtStep:'ConfirmPackage',
+    lines:[
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:5, qty:5, short:false },
+      { assortment:'K448G', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:2, qty:3, short:true },
+      { assortment:'K448N', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:1, qty:1, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'SHIPPING', items:[{assortment:'16018',qty:5},{assortment:'K448G',qty:2},{assortment:'K448N',qty:1}] }]
+  },
+  {
+    shipNum:'SHP0008679', customer:'City Electric Supply', username:'jsmith',
+    syncedAt:'2026-04-01T16:22:00', lineCount:2, boxCount:1,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'75471', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:4, qty:4, short:false },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:3, qty:3, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'KEG', items:[{assortment:'75471',qty:4},{assortment:'16018',qty:3}] }]
+  },
+
+  // mgarcia — used tablet as substitute last week
+  {
+    shipNum:'SHP0008612', customer:'Home Depot Pro', username:'mgarcia',
+    syncedAt:'2026-03-28T14:30:00', lineCount:3, boxCount:2,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'K448N', description:'K448N 15MM ID 19MM OD Metric O-Rings 2MM Width 10ct', scanned:5, qty:5, short:false },
+      { assortment:'K448G', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:3, qty:3, short:false },
+      { assortment:'16018', description:'16018 #6 3/4 Pan Phillips Sheet Metal Screws 100ct', scanned:4, qty:4, short:false },
+    ],
+    boxes:[
+      { boxNum:1, boxType:'SHIPPING', items:[{assortment:'K448N',qty:5},{assortment:'K448G',qty:3}] },
+      { boxNum:2, boxType:'SHIPPING', items:[{assortment:'16018',qty:4}] }
+    ]
+  },
+  {
+    shipNum:'SHP0008598', customer:'Fastenal - Boise', username:'mgarcia',
+    syncedAt:'2026-03-28T10:12:00', lineCount:1, boxCount:1,
+    syncStatus:'confirmed', failedAtStep:null,
+    lines:[
+      { assortment:'75465', description:'K448G 9MM ID 13MM OD Metric O-Rings 2MM Width 20ct', scanned:6, qty:6, short:false },
+    ],
+    boxes:[{ boxNum:1, boxType:'ROD', items:[{assortment:'75465',qty:6}] }]
+  },
+];
+
+const FAKE_USERS = { 'chip': 'chip', 'cbridges': 'cbridges', 'jsmith': 'jsmith', 'mgarcia': 'mgarcia' };
 
 // ═══════════════════════════════════════════════════════
 //  ASSORTMENT CODE PARSER
@@ -851,7 +1160,7 @@ function parseAssortment(item) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  STORAGE
+//  STORAGE — Active selections (keyed by user)
 // ═══════════════════════════════════════════════════════
 const STORAGE_PREFIX = 'fsse_';
 function storageKey(user, suffix) { return STORAGE_PREFIX + user + '_' + suffix; }
@@ -880,9 +1189,46 @@ function getAllSelections(user) {
 }
 
 // ═══════════════════════════════════════════════════════
+//  HISTORY LOG STORAGE
+//  Key: fsse_synclog — array of all entries, all users
+//  Pruned to 30 days on each write
+// ═══════════════════════════════════════════════════════
+const HISTORY_KEY = 'fsse_synclog';
+const HISTORY_DAYS = 30;
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveHistory(entries) {
+  // Prune to 30 days
+  const cutoff = Date.now() - (HISTORY_DAYS * 24 * 60 * 60 * 1000);
+  const pruned = entries.filter(e => new Date(e.syncedAt).getTime() > cutoff);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(pruned)); } catch(e) {}
+}
+
+function addHistoryEntry(entry) {
+  const entries = loadHistory();
+  // Remove any existing entry for same shipNum (in case of resend)
+  const filtered = entries.filter(e => e.shipNum !== entry.shipNum);
+  filtered.unshift(entry); // newest first
+  saveHistory(filtered);
+}
+
+function seedHistoryIfEmpty() {
+  // Only seed if history is completely empty — don't overwrite real data
+  const existing = loadHistory();
+  if (existing.length === 0) {
+    saveHistory(MOCK_HISTORY);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 //  AUTH
 // ═══════════════════════════════════════════════════════
-const FAKE_USERS = { 'chip': 'chip' };
 let currentUser = null;
 
 function doLogin() {
@@ -892,19 +1238,12 @@ function doLogin() {
   const btn      = document.querySelector('.login-btn');
 
   if (USE_LIVE_API) {
-    btn.disabled = true;
-    btn.textContent = 'Signing in…';
+    btn.disabled = true; btn.textContent = 'Signing in…';
     errEl.classList.remove('visible');
     apiLogin(username, password).then(result => {
-      btn.disabled = false;
-      btn.textContent = 'Sign In →';
-      if (result.ok) {
-        currentUser = username;
-        document.getElementById('header-username').textContent = username;
-        checkResumeState(username);
-        loadOrderList();
-        goTo('screen-orderlist');
-      } else if (result.reason === 'invalid_credentials') {
+      btn.disabled = false; btn.textContent = 'Sign In →';
+      if (result.ok) { _loginSuccess(username); }
+      else if (result.reason === 'invalid_credentials') {
         errEl.textContent = 'Incorrect username or password. Please try again.';
         errEl.classList.add('visible');
         document.getElementById('login-password').value = '';
@@ -913,26 +1252,28 @@ function doLogin() {
         errEl.classList.add('visible');
       }
     }).catch(() => {
-      btn.disabled = false;
-      btn.textContent = 'Sign In →';
+      btn.disabled = false; btn.textContent = 'Sign In →';
       errEl.textContent = 'Network error — could not connect to Acumatica.';
       errEl.classList.add('visible');
     });
   } else {
-    // Mock auth
     if (FAKE_USERS[username] && FAKE_USERS[username] === password) {
       errEl.classList.remove('visible');
-      currentUser = username;
-      document.getElementById('header-username').textContent = username;
-      checkResumeState(username);
-      loadOrderList();
-      goTo('screen-orderlist');
+      _loginSuccess(username);
     } else {
       errEl.textContent = 'Incorrect username or password. Please try again.';
       errEl.classList.add('visible');
       document.getElementById('login-password').value = '';
     }
   }
+}
+
+function _loginSuccess(username) {
+  currentUser = username;
+  document.getElementById('header-username').textContent = username;
+  checkResumeState(username);
+  loadOrderList();
+  goTo('screen-orderlist');
 }
 
 function doLogout() {
@@ -972,10 +1313,7 @@ function loadOrderList() {
   if (USE_LIVE_API) {
     setSyncStatus('syncing', 'LOADING');
     apiFetchOrders(currentUser).then(orders => {
-      orderListOrders = orders.sort((a, b) => {
-        const pd = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-        return pd !== 0 ? pd : new Date(a.date) - new Date(b.date);
-      });
+      orderListOrders = sortOrders(orders);
       lastRefreshTime = new Date();
       setSyncStatus('online', 'LIVE');
       renderOrderList();
@@ -983,18 +1321,20 @@ function loadOrderList() {
       console.error('loadOrderList error:', err);
       setSyncStatus('online', 'LIVE');
       lastRefreshTime = new Date();
-      renderOrderList(); // render whatever we have (may be empty)
+      renderOrderList();
     });
   } else {
-    orderListOrders = MOCK_ORDERS
-      .filter(o => o.assignedSelector === currentUser)
-      .sort((a, b) => {
-        const pd = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-        return pd !== 0 ? pd : new Date(a.date) - new Date(b.date);
-      });
+    orderListOrders = sortOrders(MOCK_ORDERS.filter(o => o.assignedSelector === currentUser));
     lastRefreshTime = new Date();
     renderOrderList();
   }
+}
+
+function sortOrders(orders) {
+  return orders.sort((a, b) => {
+    const pd = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+    return pd !== 0 ? pd : new Date(a.date) - new Date(b.date);
+  });
 }
 
 function renderOrderList() {
@@ -1020,7 +1360,7 @@ function renderOrderList() {
   }
   container.innerHTML = allOrders.map(order => {
     const saved = sels[order.shipNum];
-    const isUnsynced = saved && saved.lines && saved.lines.every(l => l.status !== 'pending');
+    const isUnsynced   = saved && saved.lines && saved.lines.every(l => l.status !== 'pending');
     const isInProgress = saved && saved.lines && saved.lines.some(l => l.status === 'pending');
     const pClass = 'priority-' + (order.priority || 'medium').toLowerCase();
     const lineCount = order.lines ? order.lines.length : '—';
@@ -1047,11 +1387,7 @@ function manualRefresh() {
   const icon = document.getElementById('refresh-icon');
   icon.classList.add('spinning');
   setSyncStatus('syncing', 'REFRESHING');
-  setTimeout(() => {
-    loadOrderList();
-    icon.classList.remove('spinning');
-    setSyncStatus('online', 'LIVE');
-  }, 1200);
+  setTimeout(() => { loadOrderList(); icon.classList.remove('spinning'); setSyncStatus('online', 'LIVE'); }, 1200);
 }
 
 function setSyncStatus(state, label) {
@@ -1062,27 +1398,17 @@ function setSyncStatus(state, label) {
 // ═══════════════════════════════════════════════════════
 //  BOX MANAGEMENT
 // ═══════════════════════════════════════════════════════
-// boxes = array of { boxNum, boxType (BOX_TYPES id), items: [ { lineIdx, sku, assortment, qty } ] }
 let boxes = [];
 let currentBoxIdx = 0;
 
-function initBoxes() {
-  // Box 1 starts automatically — no box type yet, will be set when first New Box is tapped
-  // Actually: we require box type selection at the START of an order too
-  boxes = [];
-  currentBoxIdx = 0;
-}
-
+function initBoxes() { boxes = []; currentBoxIdx = 0; }
 function currentBox() { return boxes[currentBoxIdx]; }
 
 function addToCurrentBox(lineIdx, sku, assortment, qty) {
   if (!currentBox()) return;
   const existing = currentBox().items.find(i => i.lineIdx === lineIdx);
-  if (existing) {
-    existing.qty += qty;
-  } else {
-    currentBox().items.push({ lineIdx, sku, assortment, qty });
-  }
+  if (existing) existing.qty += qty;
+  else currentBox().items.push({ lineIdx, sku, assortment, qty });
   updateBoxStatusBar();
   saveProgress();
 }
@@ -1095,15 +1421,8 @@ function updateBoxStatusBar() {
   document.getElementById('box-item-count').textContent = totalItems;
 }
 
-function requestNewBox() {
-  // Show box type selector modal
-  renderBoxTypeModal();
-  document.getElementById('box-type-modal').classList.remove('hidden');
-}
-
-function cancelNewBox() {
-  document.getElementById('box-type-modal').classList.add('hidden');
-}
+function requestNewBox() { renderBoxTypeModal(); document.getElementById('box-type-modal').classList.remove('hidden'); }
+function cancelNewBox()  { document.getElementById('box-type-modal').classList.add('hidden'); }
 
 function renderBoxTypeModal() {
   const grid = document.getElementById('box-type-grid');
@@ -1112,18 +1431,15 @@ function renderBoxTypeModal() {
       <div class="box-type-id">${bt.id}</div>
       <div class="box-type-name">${bt.name}</div>
       <div class="box-type-dims">${bt.dims}</div>
-    </button>
-  `).join('');
+    </button>`).join('');
 }
 
 function selectBoxType(boxTypeId) {
   document.getElementById('box-type-modal').classList.add('hidden');
   if (boxes.length === 0) {
-    // First box of the order
     boxes.push({ boxNum: 1, boxType: boxTypeId, items: [] });
     currentBoxIdx = 0;
   } else {
-    // Close current box, open new one
     currentBoxIdx = boxes.length;
     boxes.push({ boxNum: boxes.length + 1, boxType: boxTypeId, items: [] });
   }
@@ -1145,36 +1461,25 @@ let manualStep1Value = null;
 function openOrder(shipNum) {
   const saved = loadSelection(currentUser, shipNum);
   if (saved) {
-    order = saved.order;
-    lines = saved.lines;
-    boxes = saved.boxes || [];
-    currentBoxIdx = saved.currentBoxIdx || 0;
+    order = saved.order; lines = saved.lines;
+    boxes = saved.boxes || []; currentBoxIdx = saved.currentBoxIdx || 0;
     lineIdx = lines.findIndex(l => l.status === 'pending');
     if (lineIdx === -1) lineIdx = lines.length;
   } else {
     const o = orderListOrders.find(x => x.shipNum === shipNum);
     if (!o) return;
     order = { shipNum: o.shipNum, customer: o.customer, po: o.po, priority: o.priority, date: o.date };
-    lines = o.lines.map(l => ({
-      ...l,
-      assortment: parseAssortment(l),
-      scanned: 0,
-      status: 'pending',
-      manualEntry: false
-    }));
+    lines = o.lines.map(l => ({ ...l, assortment: parseAssortment(l), scanned: 0, status: 'pending', manualEntry: false }));
     lineIdx = 0;
     initBoxes();
     saveProgress();
   }
   buildUpcMap();
-
-  // If no boxes yet, immediately show box type selector for Box 1
   if (boxes.length === 0) {
     renderSelectionScreen();
     goTo('screen-pick');
     setTimeout(() => {
       renderBoxTypeModal();
-      // Update modal title for first box
       document.querySelector('.modal-title').textContent = 'Select Box Type — Box 1';
       document.querySelector('.modal-sub').textContent = 'Choose the box you are starting with';
       document.getElementById('box-type-modal').classList.remove('hidden');
@@ -1186,21 +1491,13 @@ function openOrder(shipNum) {
   }
 }
 
-function exitSelection() {
-  saveProgress();
-  cancelManual();
-  cancelNewBox();
-  goToOrderList();
-}
+function exitSelection() { saveProgress(); cancelManual(); cancelNewBox(); goToOrderList(); }
 
 // ═══════════════════════════════════════════════════════
 //  UPC MAP
 // ═══════════════════════════════════════════════════════
 let UPC_MAP = {};
-function buildUpcMap() {
-  UPC_MAP = {};
-  lines.forEach(l => (l.upcs || []).forEach(u => UPC_MAP[u] = l.sku));
-}
+function buildUpcMap() { UPC_MAP = {}; lines.forEach(l => (l.upcs || []).forEach(u => UPC_MAP[u] = l.sku)); }
 
 // ═══════════════════════════════════════════════════════
 //  NAVIGATION
@@ -1208,15 +1505,14 @@ function buildUpcMap() {
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id === 'screen-history-users') renderHistoryUsers();
 }
 function goToOrderList() { loadOrderList(); goTo('screen-orderlist'); }
 
 // ═══════════════════════════════════════════════════════
 //  SCANNER
 // ═══════════════════════════════════════════════════════
-let scanBuffer = '';
-let scanTimer = null;
-let lastKeyTime = 0;
+let scanBuffer = '', scanTimer = null, lastKeyTime = 0;
 const SCANNER_SPEED_MS = 60;
 
 document.addEventListener('keydown', e => {
@@ -1225,65 +1521,35 @@ document.addEventListener('keydown', e => {
   if (document.activeElement === document.getElementById('manual-input-1')) return;
   if (document.activeElement === document.getElementById('manual-input-2')) return;
   if (scanLocked) return;
-
   const now = Date.now();
   if (e.key === 'Enter') {
-    const raw = scanBuffer.trim();
-    scanBuffer = ''; lastKeyTime = 0; clearTimeout(scanTimer);
-    if (raw.length >= 4) processScan(raw);
-    return;
+    const raw = scanBuffer.trim(); scanBuffer = ''; lastKeyTime = 0; clearTimeout(scanTimer);
+    if (raw.length >= 4) processScan(raw); return;
   }
   if (e.key.length === 1) {
     if (scanBuffer.length > 0 && (now - lastKeyTime) > SCANNER_SPEED_MS) scanBuffer = '';
-    scanBuffer += e.key;
-    lastKeyTime = now;
-    clearTimeout(scanTimer);
-    scanTimer = setTimeout(() => {
-      const raw = scanBuffer.trim();
-      scanBuffer = '';
-      if (raw.length >= 4) processScan(raw);
-    }, 300);
+    scanBuffer += e.key; lastKeyTime = now; clearTimeout(scanTimer);
+    scanTimer = setTimeout(() => { const raw = scanBuffer.trim(); scanBuffer = ''; if (raw.length >= 4) processScan(raw); }, 300);
   }
 });
 
 function processScan(raw) {
   const line = lines[lineIdx];
   if (!line) return;
-
-  // Guard: must have a box selected
-  if (!currentBox()) {
-    requestNewBox();
-    return;
-  }
-
+  if (!currentBox()) { requestNewBox(); return; }
   const scannedSku = UPC_MAP[raw] || raw;
-  if (scannedSku !== line.sku) {
-    flashCard('nomatch');
-    setFeedback('bad', `✗ Wrong item — expected ${line.assortment || line.sku}`);
-    beep('bad');
-    return;
-  }
-
+  if (scannedSku !== line.sku) { flashCard('nomatch'); setFeedback('bad', `✗ Wrong item — expected ${line.assortment || line.sku}`); beep('bad'); return; }
   if (line.scanned >= line.qty) { scanLocked = true; return; }
-
   line.scanned++;
   addToCurrentBox(lineIdx, line.sku, line.assortment || line.sku, 1);
-  updateCounter();
-  beep('good');
+  updateCounter(); beep('good');
   setFeedback('good', `✓ Scan ${line.scanned} of ${line.qty}`);
   flashCard('match');
-
   if (line.scanned >= line.qty) {
     scanLocked = true;
     setFeedback('done-all', `✓ ${line.qty} of ${line.qty} — complete!`);
-    beep('complete');
-    saveProgress();
-    setTimeout(() => {
-      line.status = 'done';
-      updateProgress();
-      saveProgress();
-      advanceLine();
-    }, 600);
+    beep('complete'); saveProgress();
+    setTimeout(() => { line.status = 'done'; updateProgress(); saveProgress(); advanceLine(); }, 600);
   }
 }
 
@@ -1293,16 +1559,12 @@ function processScan(raw) {
 function renderSelectionScreen() {
   document.getElementById('p-shipnum').textContent = order.shipNum;
   document.getElementById('p-customer').textContent = order.customer;
-  if (lineIdx < lines.length) renderCurrentLine();
-  else showAllDone();
-  updateProgress();
-  updateBoxStatusBar();
+  if (lineIdx < lines.length) renderCurrentLine(); else showAllDone();
+  updateProgress(); updateBoxStatusBar();
 }
 
 function renderCurrentLine() {
-  scanLocked = false;
-  scanBuffer = '';
-  cancelManual();
+  scanLocked = false; scanBuffer = ''; cancelManual();
   const line = lines[lineIdx];
   if (!line) { showAllDone(); return; }
   document.getElementById('item-card').style.display = '';
@@ -1318,13 +1580,11 @@ function renderCurrentLine() {
 }
 
 function updateCounter() {
-  const line = lines[lineIdx];
-  if (!line) return;
+  const line = lines[lineIdx]; if (!line) return;
   const numEl = document.getElementById('counter-num');
   numEl.textContent = line.scanned;
   document.getElementById('counter-needed').textContent = line.qty;
-  numEl.className = 'counter-num' +
-    (line.scanned >= line.qty ? ' complete' : line.scanned > 0 ? ' partial' : '');
+  numEl.className = 'counter-num' + (line.scanned >= line.qty ? ' complete' : line.scanned > 0 ? ' partial' : '');
 }
 
 function updateProgress() {
@@ -1339,27 +1599,16 @@ function showAllDone() {
   document.getElementById('all-done-card').style.display = 'flex';
 }
 
-function flashCard(cls) {
-  const card = document.getElementById('item-card');
-  card.classList.add(cls);
-  setTimeout(() => card.classList.remove(cls), 600);
-}
-
-function setFeedback(type, msg) {
-  const el = document.getElementById('scan-feedback');
-  el.className = 'scan-feedback ' + type;
-  el.textContent = msg;
-}
+function flashCard(cls) { const card = document.getElementById('item-card'); card.classList.add(cls); setTimeout(() => card.classList.remove(cls), 600); }
+function setFeedback(type, msg) { const el = document.getElementById('scan-feedback'); el.className = 'scan-feedback ' + type; el.textContent = msg; }
 
 // ═══════════════════════════════════════════════════════
 //  MANUAL QUANTITY
 // ═══════════════════════════════════════════════════════
 function startManual() {
-  const line = lines[lineIdx];
-  if (!line) return;
+  const line = lines[lineIdx]; if (!line) return;
   if (!currentBox()) { requestNewBox(); return; }
-  manualVisible = true;
-  manualStep1Value = null;
+  manualVisible = true; manualStep1Value = null;
   document.getElementById('manual-entry').classList.add('visible');
   document.getElementById('manual-label-text').textContent = 'Step 1 of 2 — Enter quantity selected:';
   document.getElementById('manual-max-hint').textContent = `Max: ${line.qty}`;
@@ -1376,16 +1625,8 @@ function startManual() {
 function manualStep() {
   const line = lines[lineIdx];
   const val = parseInt(document.getElementById('manual-input-1').value);
-  if (isNaN(val) || val < 0) {
-    showManualError('Please enter a valid quantity.');
-    document.getElementById('manual-input-1').classList.add('error');
-    return;
-  }
-  if (val > line.qty) {
-    showManualError(`Cannot exceed ordered quantity of ${line.qty}.`);
-    document.getElementById('manual-input-1').classList.add('error');
-    return;
-  }
+  if (isNaN(val) || val < 0) { showManualError('Please enter a valid quantity.'); document.getElementById('manual-input-1').classList.add('error'); return; }
+  if (val > line.qty) { showManualError(`Cannot exceed ordered quantity of ${line.qty}.`); document.getElementById('manual-input-1').classList.add('error'); return; }
   manualStep1Value = val;
   document.getElementById('manual-input-1').classList.remove('error');
   document.getElementById('manual-label-text').textContent = 'Step 2 of 2 — Re-enter to confirm:';
@@ -1398,11 +1639,7 @@ function manualStep() {
 function manualConfirm() {
   const line = lines[lineIdx];
   const val2 = parseInt(document.getElementById('manual-input-2').value);
-  if (isNaN(val2) || val2 < 0) {
-    showManualError('Please re-enter the quantity.');
-    document.getElementById('manual-input-2').classList.add('error');
-    return;
-  }
+  if (isNaN(val2) || val2 < 0) { showManualError('Please re-enter the quantity.'); document.getElementById('manual-input-2').classList.add('error'); return; }
   if (val2 !== manualStep1Value) {
     showManualError('Quantities do not match. Please try again.');
     document.getElementById('manual-input-1').value = '';
@@ -1414,136 +1651,82 @@ function manualConfirm() {
     document.getElementById('manual-input-1').focus();
     return;
   }
-  line.scanned = manualStep1Value;
-  line.manualEntry = true;
+  line.scanned = manualStep1Value; line.manualEntry = true;
   addToCurrentBox(lineIdx, line.sku, line.assortment || line.sku, manualStep1Value);
   updateCounter();
-  if (line.scanned >= line.qty) {
-    setFeedback('done-all', `✓ ${line.qty} of ${line.qty} — tap Confirm`);
-  } else {
-    setFeedback('warn', `${line.scanned} entered manually — ${line.qty - line.scanned} short`);
-  }
+  if (line.scanned >= line.qty) setFeedback('done-all', `✓ ${line.qty} of ${line.qty} — tap Confirm`);
+  else setFeedback('warn', `${line.scanned} entered manually — ${line.qty - line.scanned} short`);
   cancelManual();
 }
 
-function cancelManual() {
-  manualVisible = false;
-  manualStep1Value = null;
-  const el = document.getElementById('manual-entry');
-  if (el) el.classList.remove('visible');
-}
-
-function showManualError(msg) {
-  const errEl = document.getElementById('manual-error');
-  errEl.textContent = msg;
-  errEl.classList.add('visible');
-}
+function cancelManual() { manualVisible = false; manualStep1Value = null; const el = document.getElementById('manual-entry'); if (el) el.classList.remove('visible'); }
+function showManualError(msg) { const errEl = document.getElementById('manual-error'); errEl.textContent = msg; errEl.classList.add('visible'); }
 
 // ═══════════════════════════════════════════════════════
 //  CONFIRM / SHORT SHIP / ADVANCE
 // ═══════════════════════════════════════════════════════
 function confirmLine() {
-  const line = lines[lineIdx];
-  if (!line) return;
-  if (line.scanned === 0 && line.qty > 0) {
-    if (!confirm('Nothing scanned yet. Confirm as 0 selected?')) return;
-  }
+  const line = lines[lineIdx]; if (!line) return;
+  if (line.scanned === 0 && line.qty > 0 && !confirm('Nothing scanned yet. Confirm as 0 selected?')) return;
   line.status = line.scanned >= line.qty ? 'done' : 'short';
-  updateProgress();
-  saveProgress();
-  advanceLine();
+  updateProgress(); saveProgress(); advanceLine();
 }
 
 function confirmShort() {
-  const line = lines[lineIdx];
-  if (!line) return;
-  line.status = 'short';
-  updateProgress();
-  saveProgress();
-  advanceLine();
+  const line = lines[lineIdx]; if (!line) return;
+  line.status = 'short'; updateProgress(); saveProgress(); advanceLine();
 }
 
 function advanceLine() {
   let next = lines.findIndex((l, i) => i > lineIdx && l.status === 'pending');
   if (next === -1) next = lines.findIndex(l => l.status === 'pending');
-  if (next === -1) {
-    lineIdx = lines.length;
-    saveProgress();
-    showAllDone();
-    updateProgress();
-  } else {
-    lineIdx = next;
-    renderCurrentLine();
-  }
+  if (next === -1) { lineIdx = lines.length; saveProgress(); showAllDone(); updateProgress(); }
+  else { lineIdx = next; renderCurrentLine(); }
 }
 
 function saveProgress() {
-  if (order && currentUser)
-    saveSelection(currentUser, order.shipNum, { order, lines, boxes, currentBoxIdx });
+  if (order && currentUser) saveSelection(currentUser, order.shipNum, { order, lines, boxes, currentBoxIdx });
 }
 
 // ═══════════════════════════════════════════════════════
 //  OVERVIEW SHEET
 // ═══════════════════════════════════════════════════════
 function showOverview() {
-  // Box summary
   const boxSection = document.getElementById('ov-box-section');
   if (boxes.length > 0) {
     boxSection.innerHTML = `
       <div class="ov-box-header">📦 Boxes (${boxes.length})</div>
       ${boxes.map(b => {
         const totalItems = b.items.reduce((s, i) => s + i.qty, 0);
-        const lineList = b.items.map(i =>
-          `<div class="ov-box-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`
-        ).join('');
         return `<div class="ov-box-card">
           <div class="ov-box-title">Box ${b.boxNum} · ${b.boxType} · ${totalItems} items</div>
-          ${lineList || '<div class="ov-box-line" style="opacity:0.4">Empty</div>'}
+          ${b.items.map(i => `<div class="ov-box-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`).join('') || '<div class="ov-box-line" style="opacity:0.4">Empty</div>'}
         </div>`;
-      }).join('')}
-    `;
-  } else {
-    boxSection.innerHTML = '';
-  }
+      }).join('')}`;
+  } else { boxSection.innerHTML = ''; }
 
-  // Line items
   const list = document.getElementById('overview-list');
   list.innerHTML = lines.map((l, i) => {
     let statusClass = 'pending', statusIcon = '○';
     if (i === lineIdx && l.status === 'pending') { statusClass = 'current'; statusIcon = '→'; }
     else if (l.status === 'done')  { statusClass = 'done';       statusIcon = '✓'; }
     else if (l.status === 'short') { statusClass = 'short-pick'; statusIcon = '!'; }
-    const qtyDisplay = l.status === 'pending' ? `${l.scanned}/${l.qty}` :
-                       l.status === 'short'   ? `${l.scanned}/${l.qty} SHORT` :
-                                                `${l.qty}/${l.qty}`;
+    const qtyDisplay = l.status === 'pending' ? `${l.scanned}/${l.qty}` : l.status === 'short' ? `${l.scanned}/${l.qty} SHORT` : `${l.qty}/${l.qty}`;
     const manualFlag = l.manualEntry ? `<div class="ov-manual-flag">⚠ manually entered</div>` : '';
     return `<div class="ov-item ${l.status === 'done' ? 'done' : l.status === 'short' ? 'short-pick' : ''}" onclick="jumpTo(${i})">
       <div class="ov-status ${statusClass}">${statusIcon}</div>
-      <div class="ov-info">
-        <div class="ov-assort">${l.assortment || l.sku}</div>
-        <div class="ov-desc">${l.description}</div>
-        ${manualFlag}
-      </div>
+      <div class="ov-info"><div class="ov-assort">${l.assortment || l.sku}</div><div class="ov-desc">${l.description}</div>${manualFlag}</div>
       <div class="ov-qty">${qtyDisplay}</div>
     </div>`;
   }).join('');
-
   document.getElementById('overview-sheet').style.display = 'flex';
 }
 
-function hideOverview(e) {
-  if (!e || e.target === document.getElementById('overview-sheet'))
-    document.getElementById('overview-sheet').style.display = 'none';
-}
+function hideOverview(e) { if (!e || e.target === document.getElementById('overview-sheet')) document.getElementById('overview-sheet').style.display = 'none'; }
 
 function jumpTo(i) {
-  lineIdx = i;
-  lines[i].status = 'pending';
-  lines[i].scanned = 0;
-  lines[i].manualEntry = false;
-  hideOverview();
-  renderCurrentLine();
-  updateProgress();
+  lineIdx = i; lines[i].status = 'pending'; lines[i].scanned = 0; lines[i].manualEntry = false;
+  hideOverview(); renderCurrentLine(); updateProgress();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1553,8 +1736,7 @@ function goToConfirm() {
   const pending = lines.filter(l => l.status === 'pending').length;
   if (pending > 0 && !confirm(`${pending} line(s) not yet confirmed. Continue to review?`)) return;
   document.getElementById('sync-fail-banner').classList.remove('visible');
-  renderConfirm();
-  goTo('screen-confirm');
+  renderConfirm(); goTo('screen-confirm');
 }
 
 function renderConfirm() {
@@ -1562,7 +1744,6 @@ function renderConfirm() {
   const shorts  = lines.filter(l => l.status === 'short');
   const manuals = lines.filter(l => l.manualEntry);
   const pending = lines.filter(l => l.status === 'pending').length;
-
   document.getElementById('confirm-summary').innerHTML = `
     <div class="summary-row"><span class="summary-label">Shipment</span><span class="summary-value">${order.shipNum}</span></div>
     <div class="summary-row"><span class="summary-label">Customer</span><span class="summary-value">${order.customer}</span></div>
@@ -1573,64 +1754,34 @@ function renderConfirm() {
     ${manuals.length > 0 ? `<div class="summary-row"><span class="summary-label">Manual entries</span><span class="summary-value info">${manuals.length} lines</span></div>` : ''}
     ${pending > 0 ? `<div class="summary-row"><span class="summary-label">Unconfirmed</span><span class="summary-value warn">${pending} lines</span></div>` : ''}
   `;
-
-  // Box summary
   const boxList = document.getElementById('box-summary-list');
   boxList.innerHTML = boxes.map(b => {
     const totalItems = b.items.reduce((s, i) => s + i.qty, 0);
-    const lineItems = b.items.map(i =>
-      `<div class="box-summary-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`
-    ).join('');
     return `<div class="box-summary-item">
-      <div class="box-summary-header">
-        <div class="box-summary-name">Box ${b.boxNum} · ${b.boxType}</div>
-        <div class="box-summary-count">${totalItems} items</div>
-      </div>
-      <div class="box-summary-lines">
-        ${lineItems || '<div style="font-size:12px;color:var(--text2);opacity:0.5">Empty</div>'}
-      </div>
+      <div class="box-summary-header"><div class="box-summary-name">Box ${b.boxNum} · ${b.boxType}</div><div class="box-summary-count">${totalItems} items</div></div>
+      <div class="box-summary-lines">${b.items.map(i => `<div class="box-summary-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`).join('') || '<div style="font-size:12px;color:var(--text2);opacity:0.5">Empty</div>'}</div>
     </div>`;
   }).join('');
-
-  // Short ships
   if (shorts.length > 0) {
     document.getElementById('short-section').style.display = 'block';
     document.getElementById('short-list').innerHTML = shorts.map(s => `
       <div class="short-item">
-        <div>
-          <div class="short-assort">${s.assortment || s.sku}</div>
-          <div class="short-desc">${s.description}</div>
-        </div>
-        <div>
-          <div class="short-qty-display">${s.scanned} / ${s.qty}</div>
-          <div class="short-qty-label">selected / ordered</div>
-        </div>
+        <div><div class="short-assort">${s.assortment || s.sku}</div><div class="short-desc">${s.description}</div></div>
+        <div><div class="short-qty-display">${s.scanned} / ${s.qty}</div><div class="short-qty-label">selected / ordered</div></div>
       </div>`).join('');
-  } else {
-    document.getElementById('short-section').style.display = 'none';
-  }
-
-  // Manual entries
+  } else { document.getElementById('short-section').style.display = 'none'; }
   if (manuals.length > 0) {
     document.getElementById('manual-section').style.display = 'block';
     document.getElementById('manual-list').innerHTML = manuals.map(m => `
       <div class="manual-item">
-        <div>
-          <div class="manual-item-assort">${m.assortment || m.sku}</div>
-          <div class="manual-item-desc">${m.description}</div>
-        </div>
-        <div>
-          <div class="manual-item-qty">${m.scanned} / ${m.qty}</div>
-          <div class="manual-item-label">manually entered</div>
-        </div>
+        <div><div class="manual-item-assort">${m.assortment || m.sku}</div><div class="manual-item-desc">${m.description}</div></div>
+        <div><div class="manual-item-qty">${m.scanned} / ${m.qty}</div><div class="manual-item-label">manually entered</div></div>
       </div>`).join('');
-  } else {
-    document.getElementById('manual-section').style.display = 'none';
-  }
+  } else { document.getElementById('manual-section').style.display = 'none'; }
 }
 
 // ═══════════════════════════════════════════════════════
-//  SYNC
+//  SYNC  (mock — writes to history log)
 // ═══════════════════════════════════════════════════════
 function doSync() {
   document.getElementById('sync-fail-banner').classList.remove('visible');
@@ -1639,9 +1790,28 @@ function doSync() {
 }
 
 function attemptSyncToAcumatica(shipNum, data) {
-  const willSucceed = true; // set Math.random() > 0.2 to test failure path
+  const willSucceed = true; // flip to Math.random() > 0.2 to test failure
   setTimeout(() => {
     if (willSucceed) {
+      // Write to history log
+      addHistoryEntry({
+        shipNum: data.order.shipNum,
+        customer: data.order.customer,
+        username: currentUser,
+        syncedAt: new Date().toISOString(),
+        lineCount: data.lines.length,
+        boxCount: data.boxes ? data.boxes.length : 0,
+        syncStatus: 'confirmed',
+        failedAtStep: null,
+        lines: data.lines.map(l => ({
+          assortment: l.assortment || l.sku,
+          description: l.description,
+          scanned: l.scanned,
+          qty: l.qty,
+          short: l.scanned < l.qty
+        })),
+        boxes: data.boxes || []
+      });
       removeSelection(currentUser, shipNum);
       orderListOrders = orderListOrders.filter(o => o.shipNum !== shipNum);
       const boxCount = data.boxes ? data.boxes.length : 0;
@@ -1659,6 +1829,329 @@ function attemptSyncToAcumatica(shipNum, data) {
 function hideSyncFail() { document.getElementById('sync-fail-banner').classList.remove('visible'); }
 
 // ═══════════════════════════════════════════════════════
+//  HISTORY — NAVIGATION STATE
+// ═══════════════════════════════════════════════════════
+let histSelectedUser = null;
+let histSelectedDate = null;
+let histSelectedEntry = null;
+
+// ═══════════════════════════════════════════════════════
+//  HISTORY — SCREEN 1: USER LIST
+// ═══════════════════════════════════════════════════════
+function renderHistoryUsers() {
+  const entries = loadHistory();
+  // Get unique users and their order counts
+  const userMap = {};
+  entries.forEach(e => {
+    if (!userMap[e.username]) userMap[e.username] = { count: 0, latest: e.syncedAt };
+    userMap[e.username].count++;
+    if (e.syncedAt > userMap[e.username].latest) userMap[e.username].latest = e.syncedAt;
+  });
+  const users = Object.entries(userMap).sort((a, b) => b[1].latest.localeCompare(a[1].latest));
+  const list = document.getElementById('hist-users-list');
+  if (users.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🕒</div><div class="empty-title">No history yet</div><div class="empty-sub">Completed syncs will appear here.</div></div>`;
+    return;
+  }
+  list.innerHTML = users.map(([username, info]) => {
+    const latestDate = new Date(info.latest).toLocaleDateString([], {month:'short', day:'numeric'});
+    return `<div class="hist-card" onclick="selectHistUser('${username}')">
+      <div class="hist-card-left">
+        <div class="hist-card-title">${username}</div>
+        <div class="hist-card-sub">Last sync: ${latestDate}</div>
+      </div>
+      <div class="hist-card-right">
+        <div class="hist-card-count">${info.count} order${info.count !== 1 ? 's' : ''}</div>
+        <div class="hist-chevron">›</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectHistUser(username) {
+  histSelectedUser = username;
+  document.getElementById('hist-dates-title').textContent = username.toUpperCase();
+  renderHistoryDates();
+  goTo('screen-history-dates');
+}
+
+// ═══════════════════════════════════════════════════════
+//  HISTORY — SCREEN 2: DATE LIST
+// ═══════════════════════════════════════════════════════
+function renderHistoryDates() {
+  const entries = loadHistory().filter(e => e.username === histSelectedUser);
+  // Group by date
+  const dateMap = {};
+  entries.forEach(e => {
+    const date = e.syncedAt.slice(0, 10);
+    if (!dateMap[date]) dateMap[date] = [];
+    dateMap[date].push(e);
+  });
+  const dates = Object.entries(dateMap).sort((a, b) => b[0].localeCompare(a[0]));
+  const list = document.getElementById('hist-dates-list');
+  list.innerHTML = dates.map(([date, dayEntries]) => {
+    const d = new Date(date + 'T12:00:00');
+    const label = d.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+    const hasIssue = dayEntries.some(e => e.syncStatus !== 'confirmed');
+    const issueIndicator = hasIssue ? ' ⚠' : '';
+    return `<div class="hist-card" onclick="selectHistDate('${date}')">
+      <div class="hist-card-left">
+        <div class="hist-card-title" style="font-size:15px;">${label}${issueIndicator}</div>
+        <div class="hist-card-sub">${dayEntries.length} order${dayEntries.length !== 1 ? 's' : ''} synced</div>
+      </div>
+      <div class="hist-card-right">
+        <div class="hist-chevron">›</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectHistDate(date) {
+  histSelectedDate = date;
+  const d = new Date(date + 'T12:00:00');
+  const label = d.toLocaleDateString([], {month:'short', day:'numeric'});
+  document.getElementById('hist-orders-title').textContent = label.toUpperCase();
+  document.getElementById('hist-orders-sub').textContent = `Orders synced by ${histSelectedUser} on ${label}`;
+  renderHistoryOrders();
+  goTo('screen-history-orders');
+}
+
+// ═══════════════════════════════════════════════════════
+//  HISTORY — SCREEN 3: ORDER LIST FOR DATE
+// ═══════════════════════════════════════════════════════
+function renderHistoryOrders() {
+  const entries = loadHistory().filter(e => e.username === histSelectedUser && e.syncedAt.slice(0,10) === histSelectedDate);
+  entries.sort((a, b) => b.syncedAt.localeCompare(a.syncedAt));
+  const list = document.getElementById('hist-orders-list');
+  list.innerHTML = entries.map(e => {
+    const time = new Date(e.syncedAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    const statusClass = e.syncStatus;
+    const statusLabel = e.syncStatus === 'confirmed' ? '✓ Confirmed' : e.syncStatus === 'failed' ? '✗ Failed' : '⚠ Partial';
+    return `<div class="hist-order-card ${statusClass}" onclick="selectHistOrder('${e.shipNum}')">
+      <div class="hist-order-top">
+        <div class="hist-order-num">${e.shipNum}</div>
+        <div class="sync-badge sync-${statusClass}">${statusLabel}</div>
+      </div>
+      <div style="font-size:15px;font-weight:600;color:var(--text);margin-top:2px;">${e.customer}</div>
+      <div class="hist-order-meta">
+        <div class="hist-order-meta-item">Lines <span>${e.lineCount}</span></div>
+        <div class="hist-order-meta-item">Boxes <span>${e.boxCount}</span></div>
+        <div class="hist-order-meta-item">Synced <span>${time}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectHistOrder(shipNum) {
+  const entries = loadHistory();
+  histSelectedEntry = entries.find(e => e.shipNum === shipNum);
+  if (!histSelectedEntry) return;
+  document.getElementById('hist-detail-title').textContent = shipNum;
+  renderHistoryDetail();
+  goTo('screen-history-detail');
+}
+
+// ═══════════════════════════════════════════════════════
+//  HISTORY — SCREEN 4: ORDER DETAIL
+// ═══════════════════════════════════════════════════════
+function renderHistoryDetail() {
+  const e = histSelectedEntry;
+  const syncedTime = new Date(e.syncedAt).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  const shorts = (e.lines || []).filter(l => l.short);
+
+  let statusLabel, resendSection;
+
+  if (e.syncStatus === 'confirmed') {
+    statusLabel = '✓ Confirmed';
+    resendSection = `
+      <div class="resend-section">
+        <div class="resend-card">
+          <div class="resend-title">✓ Successfully Synced</div>
+          <div class="resend-sub">This order was confirmed in Acumatica at ${syncedTime}. If quantities need to be resent, tap below — supervisor authorization required.</div>
+          <button class="btn btn-ghost btn-sm" onclick="doResend()">Resend to Acumatica</button>
+        </div>
+      </div>`;
+  } else if (e.syncStatus === 'resolved') {
+    const resolvedTime = e.resolvedAt ? new Date(e.resolvedAt).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '—';
+    statusLabel = '○ Resolved Manually';
+    resendSection = `
+      <div class="resend-section">
+        <div class="resend-card">
+          <div class="resend-title">○ Marked as Resolved</div>
+          <div class="resend-sub">A supervisor marked this as manually resolved in Acumatica at ${resolvedTime}. If you still need to resend, tap below.</div>
+          <button class="btn btn-ghost btn-sm" onclick="doResend()">Resend to Acumatica</button>
+        </div>
+      </div>`;
+  } else {
+    const stepMsg = e.failedAtStep ? `Sync stopped at step: <strong>${e.failedAtStep}</strong>` : 'Sync failed before completing.';
+    statusLabel = e.syncStatus === 'failed' ? '✗ Failed' : '⚠ Partial';
+    resendSection = `
+      <div class="resend-section">
+        <div class="resend-failed-card">
+          <div class="resend-failed-title">⚠ Sync ${e.syncStatus === 'failed' ? 'Failed' : 'Incomplete'}</div>
+          <div class="resend-step">${stepMsg}</div>
+          <div class="resend-failed-sub">Quantities may not have been written to Acumatica. Choose an action below — supervisor authorization required.</div>
+          <div style="display:flex;gap:10px;margin-top:4px;">
+            <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="doMarkResolved()">Mark as Resolved</button>
+            <button class="btn btn-danger btn-sm" style="flex:1;" onclick="doResend()">Resend to Acumatica</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const linesHtml = (e.lines || []).map(l => `
+    <div class="hist-line-item">
+      <div>
+        <div class="hist-line-assort">${l.assortment}</div>
+        <div class="hist-line-desc">${l.description}</div>
+      </div>
+      <div>
+        <div class="hist-line-qty">${l.scanned} / ${l.qty}</div>
+        ${l.short ? '<div class="hist-line-short">SHORT</div>' : ''}
+      </div>
+    </div>`).join('');
+
+  const boxesHtml = (e.boxes || []).map(b => {
+    const total = (b.items || []).reduce((s, i) => s + i.qty, 0);
+    return `<div class="hist-box-item">
+      <div class="hist-box-title">Box ${b.boxNum} · ${b.boxType} · ${total} items</div>
+      ${(b.items || []).map(i => `<div class="hist-box-line"><span>${i.assortment || i.sku}</span> × ${i.qty}</div>`).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('hist-detail-content').innerHTML = `
+    <div class="summary-card">
+      <div class="summary-row"><span class="summary-label">Shipment</span><span class="summary-value">${e.shipNum}</span></div>
+      <div class="summary-row"><span class="summary-label">Customer</span><span class="summary-value">${e.customer}</span></div>
+      <div class="summary-row"><span class="summary-label">Selector</span><span class="summary-value">${e.username}</span></div>
+      <div class="summary-row"><span class="summary-label">Synced at</span><span class="summary-value">${syncedTime}</span></div>
+      <div class="summary-row"><span class="summary-label">Status</span><span class="summary-value"><span class="sync-badge sync-${e.syncStatus}">${statusLabel}</span></span></div>
+      <div class="summary-row"><span class="summary-label">Lines</span><span class="summary-value">${e.lineCount}</span></div>
+      <div class="summary-row"><span class="summary-label">Boxes</span><span class="summary-value">${e.boxCount}</span></div>
+      ${shorts.length > 0 ? `<div class="summary-row"><span class="summary-label" style="color:var(--danger);">Short ships</span><span class="summary-value warn">${shorts.length} lines</span></div>` : ''}
+    </div>
+
+    ${resendSection}
+
+    <div class="hist-detail-section">
+      <div class="section-label">Lines</div>
+      ${linesHtml}
+    </div>
+
+    ${e.boxes && e.boxes.length > 0 ? `
+    <div class="hist-detail-section">
+      <div class="section-label">Boxes</div>
+      ${boxesHtml}
+    </div>` : ''}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SUPERVISOR PIN MODAL
+// ═══════════════════════════════════════════════════════
+let pinBuffer = '';
+let pinCallback = null;
+let pinAction = '';
+
+function showPinModal(action, callback) {
+  pinBuffer = '';
+  pinAction = action;
+  pinCallback = callback;
+  document.getElementById('pin-sub').textContent =
+    action === 'resend' ? 'Supervisor PIN required to resend to Acumatica' :
+                          'Supervisor PIN required to mark as resolved';
+  document.getElementById('pin-error-msg').textContent = '';
+  renderPinDots();
+  document.getElementById('pin-modal').classList.remove('hidden');
+}
+
+function cancelPin() {
+  pinBuffer = '';
+  pinCallback = null;
+  document.getElementById('pin-modal').classList.add('hidden');
+}
+
+function renderPinDots() {
+  const len = SUPERVISOR_PIN.length;
+  document.getElementById('pin-display').innerHTML = Array.from({length: len}, (_, i) => {
+    const filled = i < pinBuffer.length;
+    return `<div class="pin-dot ${filled ? 'filled' : ''}"></div>`;
+  }).join('');
+}
+
+function renderPinDotsError() {
+  const len = SUPERVISOR_PIN.length;
+  document.getElementById('pin-display').innerHTML = Array.from({length: len}, () =>
+    `<div class="pin-dot error"></div>`
+  ).join('');
+}
+
+function pinKey(digit) {
+  if (pinBuffer.length >= SUPERVISOR_PIN.length) return;
+  document.getElementById('pin-error-msg').textContent = '';
+  pinBuffer += digit;
+  renderPinDots();
+  if (pinBuffer.length === SUPERVISOR_PIN.length) {
+    setTimeout(() => checkPin(), 120);
+  }
+}
+
+function pinBackspace() {
+  if (pinBuffer.length === 0) return;
+  pinBuffer = pinBuffer.slice(0, -1);
+  document.getElementById('pin-error-msg').textContent = '';
+  renderPinDots();
+}
+
+function checkPin() {
+  if (pinBuffer === SUPERVISOR_PIN) {
+    document.getElementById('pin-modal').classList.add('hidden');
+    if (pinCallback) pinCallback();
+  } else {
+    renderPinDotsError();
+    document.getElementById('pin-error-msg').textContent = 'Incorrect PIN — try again';
+    setTimeout(() => { pinBuffer = ''; renderPinDots(); }, 900);
+  }
+}
+
+function doResend() {
+  showPinModal('resend', () => _executeResend());
+}
+
+function _executeResend() {
+  if (!confirm(`Resend ${histSelectedEntry.shipNum} to Acumatica?`)) return;
+  // In live mode this re-fires the three API calls with stored payload
+  // In mock mode we simulate a successful resend
+  alert(`Mock resend: ${histSelectedEntry.shipNum} would be re-sent to Acumatica.\n\nIn the live app this fires:\n1. PUT picked quantities\n2. ConfirmPackage\n3. ConfirmPackList`);
+  const entries = loadHistory();
+  const idx = entries.findIndex(e => e.shipNum === histSelectedEntry.shipNum);
+  if (idx >= 0) {
+    entries[idx].syncStatus = 'confirmed';
+    entries[idx].failedAtStep = null;
+    entries[idx].syncedAt = new Date().toISOString();
+    saveHistory(entries);
+    histSelectedEntry = entries[idx];
+    renderHistoryDetail();
+  }
+}
+
+function doMarkResolved() {
+  showPinModal('resolve', () => _executeMarkResolved());
+}
+
+function _executeMarkResolved() {
+  const entries = loadHistory();
+  const idx = entries.findIndex(e => e.shipNum === histSelectedEntry.shipNum);
+  if (idx >= 0) {
+    entries[idx].syncStatus = 'resolved';
+    entries[idx].resolvedAt = new Date().toISOString();
+    saveHistory(entries);
+    histSelectedEntry = entries[idx];
+    renderHistoryDetail();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 //  AUDIO
 // ═══════════════════════════════════════════════════════
 let audioCtx = null;
@@ -1673,15 +2166,11 @@ function beep(type) {
     const plays = {
       good:     [{ freq:1400, dur:0.07, type:'sine',     vol:0.3  }],
       bad:      [{ freq:220,  dur:0.3,  type:'sawtooth', vol:0.4  }],
-      complete: [{ freq:1000, dur:0.1,  type:'sine',     vol:0.3,  delay:0    },
-                 { freq:1600, dur:0.15, type:'sine',     vol:0.3,  delay:0.12 }],
-      sync:     [{ freq:880,  dur:0.12, type:'sine',     vol:0.25, delay:0    },
-                 { freq:1100, dur:0.12, type:'sine',     vol:0.25, delay:0.14 },
-                 { freq:1320, dur:0.2,  type:'sine',     vol:0.25, delay:0.28 }],
+      complete: [{ freq:1000, dur:0.1,  type:'sine',     vol:0.3,  delay:0    }, { freq:1600, dur:0.15, type:'sine', vol:0.3, delay:0.12 }],
+      sync:     [{ freq:880,  dur:0.12, type:'sine',     vol:0.25, delay:0    }, { freq:1100, dur:0.12, type:'sine', vol:0.25, delay:0.14 }, { freq:1320, dur:0.2, type:'sine', vol:0.25, delay:0.28 }],
     };
     (plays[type] || []).forEach(p => {
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
+      const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
       o.connect(g); g.connect(audioCtx.destination);
       o.type = p.type; o.frequency.value = p.freq;
       const start = t + (p.delay || 0);
@@ -1695,6 +2184,10 @@ function beep(type) {
 // ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
+
+// Seed fake history data on first load
+seedHistoryIfEmpty();
+
 goTo('screen-login');
 </script>
 </body>
