@@ -959,7 +959,7 @@ async function apiLogout() {
 }
 
 async function apiFetchOrders(username) {
-  const filter = `AssignedPicker eq '${username}' and (Status eq 'Assigned' or Status eq 'Being Picked')`;
+  const filter = `AssignedPicker eq '${username}' and Status eq 'Assigned' or AssignedPicker eq '${username}' and Status eq 'Being Picked'`;
   const url = `${API_BASE}/entity/Default/${API_VERSION}/Shipment?$filter=${encodeURIComponent(filter)}&$expand=Details`;
   const resp = await fetch(url, { credentials: 'include' });
   if (!resp.ok) throw new Error(`Fetch orders failed: ${resp.status}`);
