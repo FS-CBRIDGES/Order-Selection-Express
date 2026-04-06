@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="app-file" content="index.html">
-<meta name="app-version" content="v4">
-<meta name="app-build" content="2026-04-03">
 <title>FS Selector Express</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
@@ -935,8 +932,8 @@
 // ═══════════════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════════════
-const USE_LIVE_API      = true;    // LIVE — hitting Acumatica via proxy
-const API_BASE          = 'https://64.227.26.119:8096';
+const USE_LIVE_API      = true;
+const API_BASE          = 'https://warehouse-pick.fasteningspecialists.com';
 const API_COMPANY       = 'Testing Tenant';
 const API_VERSION       = '24.200.001';
 const SUPERVISOR_PIN    = '123456'; // Change this to set the supervisor PIN
@@ -959,7 +956,7 @@ async function apiLogout() {
 }
 
 async function apiFetchOrders(username) {
-  const filter = `AssignedPicker eq '${username}' and Status eq 'Assigned' or AssignedPicker eq '${username}' and Status eq 'Being Picked'`;
+  const filter = `AssignedPicker eq '${username}' and (Status eq 'Assigned' or Status eq 'Being Picked')`;
   const url = `${API_BASE}/entity/Default/${API_VERSION}/Shipment?$filter=${encodeURIComponent(filter)}&$expand=Details`;
   const resp = await fetch(url, { credentials: 'include' });
   if (!resp.ok) throw new Error(`Fetch orders failed: ${resp.status}`);
