@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FS Selector Express</title>
+<title>FS Selector Express v5</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
@@ -956,7 +956,10 @@ async function apiLogout() {
 }
 
 async function apiFetchOrders(username) {
-  const filter = `AssignedPicker eq '${username}' and (Status eq 'Assigned' or Status eq 'Being Picked')`;
+  // v5 SESSION 8 DIAGNOSTIC: Filter by Status eq 'Open' to validate data pipeline.
+  // AssignedPicker is not yet exposed in Default endpoint. Swap back to
+  // AssignedPicker filter once FSSelector endpoint is extended with that field.
+  const filter = `Status eq 'Open'`;
   const url = `${API_BASE}/entity/Default/${API_VERSION}/Shipment?$filter=${encodeURIComponent(filter)}&$expand=Details`;
   const resp = await fetch(url, { credentials: 'include' });
   if (!resp.ok) throw new Error(`Fetch orders failed: ${resp.status}`);
